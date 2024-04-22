@@ -1,0 +1,1 @@
+This repo contains some scripts and utilities that will go from a draw.io diagram to csv and back.
