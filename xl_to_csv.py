@@ -26,7 +26,7 @@ def reverse_process_csv(input_file):
 
         id, owner, description, status, function, phase, \
         estimated_duration, estimated_completion_date, notes, \
-        wbs, oqe, next_step_id, shape, connector_label = row
+        wbs, oqe, next_step_id, shape, connector_label, xl_id = row
 
         if shape == "start":
             shape = "start_1"
@@ -53,7 +53,7 @@ def reverse_process_csv(input_file):
             id, owner, description, status, function, phase,
             estimated_duration, estimated_completion_date, notes,
             wbs, oqe, next_step_id, shape, width, height
-        ] + [item for sublist in decision_fields for item in sublist]
+        ] + [item for sublist in decision_fields for item in sublist] + [xl_id]
 
         input_data.append(input_row)
 
@@ -67,7 +67,7 @@ def write_output_to_csv(output_data, output_file):
                      'estimated_duration', 'estimated_completion_date', 'notes',
                      'wbs', 'oqe', 'next_step_id', 'shape', 'width', 'height',
                      'decision0_id', 'decision0_label', 'decision1_id', 'decision1_label', 
-                     'decision2_id', 'decision2_label'])
+                     'decision2_id', 'decision2_label', 'xl_id'])
     
     writer.writerows(output_data)
 

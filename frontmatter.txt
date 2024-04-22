@@ -6,7 +6,7 @@
 ## **********************************************************
 ## Configuration
 ## **********************************************************
-# label: %description%<br><br><i>%owner%</i>
+# label: %description%<br><br><i>%owner%</i><br>id: %xl_id%
 ##
 ##
 # styles: { \
@@ -41,5 +41,5 @@
 ## decision0_id, decision1_id, decision2_id are the ids of the next steps following a decision
 ## decision0_label, decision1_label, decision2_label are the labels for the decisions
 ## width and height are the dimensions of the shape
-##
+## xl_id is the original process step id from excel
 ## **********************************************************
