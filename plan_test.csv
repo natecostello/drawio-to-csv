@@ -5,7 +5,7 @@
 ## **********************************************************
 ## Configuration
 ## **********************************************************
-# label: %description%<br><br><i>%owner%</i>
+# label: %description%<br><br><i>%owner%</i><br>%xl_id%
 ##
 ##
 # styles: { \
@@ -42,14 +42,14 @@
 ## width and height are the dimensions of the shape
 ##
 ## **********************************************************
-id,owner,description,status,function,phase,estimated_duration,estimated_completion_date,notes,wbs,oqe,next_step_id,shape,width,height,decision0_id,decision0_label,decision1_id,decision1_label, decision2_id, decision2_label
-1,nate,This is a long task description like we would expect,todo,,,,,,,,"2,3,4,8",process,200,100,,,,,,
-2,alan,Cell B,done,mechanical,detail design,,,,,,,decision,100,100,3,Yes,5,No,,
-3,,Cell C,doing,,,,,,,,,decision,100,100,5,Pass,4,Fail,,
-4,alan,Cell D - I would like to see what a long description on a predefined process looks like,waiting,,,,,,,,6,predefined_process,200,100,,,,,,
-5,,Cell E,stop,,,,,,,,6,data,200,100,,,,,,
-6,,,waiting,,,,,,,,7,summing_function,100,100,,,,,,
-7,,Done,,,,,,,,,,terminator,100,50,,,,,,
-8,,Repo,,,,,,,,,9,document,200,100,,,,,,
-9,,,,,,,,,,,6,or,100,100,,,,,,
-10,,start,,,,,,,,,9,start_1,100,100,,,,,,
+id,owner,description,status,function,phase,estimated_duration,estimated_completion_date,notes,wbs,oqe,next_step_id,shape,width,height,decision0_id,decision0_label,decision1_id,decision1_label, decision2_id, decision2_label, xl_id
+1,nate,This is a long task description like we would expect,todo,,,,,,,,"2,3,4,8",process,200,100,,,,,,,
+2,alan,Cell B,done,mechanical,detail design,,,,,,,decision,100,100,3,Yes,5,No,,,
+3,,Cell C,doing,,,,,,,,,decision,100,100,5,Pass,4,Fail,,,
+4,alan,Cell D - I would like to see what a long description on a predefined process looks like,waiting,,,,,,,,6,predefined_process,200,100,,,,,,,
+5,,Cell E,stop,,,,,,,,6,data,200,100,,,,,,,
+6,,,waiting,,,,,,,,7,summing_function,100,100,,,,,,,
+7,,Done,,,,,,,,,,terminator,100,50,,,,,,,
+8,,Repo,,,,,,,,,9,document,200,100,,,,,,,
+9,,,,,,,,,,,6,or,100,100,,,,,,,
+10,,start,,,,,,,,,9,start_1,100,100,,,,,,,

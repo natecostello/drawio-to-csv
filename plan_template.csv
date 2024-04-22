@@ -5,7 +5,7 @@
 ## **********************************************************
 ## Configuration
 ## **********************************************************
-# label: %description%<br><br><i>%owner%</i>
+# label: %description%<br><br><i>%owner%</i><br>%xl_id%
 ##
 ##
 # styles: { \
@@ -42,13 +42,13 @@
 ## width and height are the dimensions of the shape
 ##
 ## **********************************************************
-id,owner,description,status,function,phase,estimated_duration,estimated_completion_date,notes,wbs,oqe,next_step_id, shape, width, height, decision0_id, decision0_label, decision1_id, decision1_label, decision2_id, decision2_label
-1,,data,,,,,,,,,,data,200,100,,,,,,
-2,,decision,,,,,,,,,,decision,100,100,,,,,,
-3,,document,,,,,,,,,,document,200,100,,,,,,
-4,,end,,,,,,,,,,terminator,100,100,,,,,,
-5,,subprocess,,,,,,,,,,predefined_process,200,100,,,,,,
-6,,process,,,,,,,,,,process,200,100,,,,,,
-7,,start,,,,,,,,,,start_1,100,100,,,,,,
-8,,,,,,,,,,,,summing_function, 100,100,,,,,,
-9,,,,,,,,,,,,or, 100,100,,,,,,
+id,owner,description,status,function,phase,estimated_duration,estimated_completion_date,notes,wbs,oqe,next_step_id, shape, width, height, decision0_id, decision0_label, decision1_id, decision1_label, decision2_id, decision2_label, xl_id
+1,,data,,,,,,,,,,data,200,100,,,,,,,
+2,,decision,,,,,,,,,,decision,100,100,,,,,,,
+3,,document,,,,,,,,,,document,200,100,,,,,,,
+4,,end,,,,,,,,,,terminator,100,100,,,,,,,
+5,,subprocess,,,,,,,,,,predefined_process,200,100,,,,,,,
+6,,process,,,,,,,,,,process,200,100,,,,,,,
+7,,start,,,,,,,,,,start_1,100,100,,,,,,,
+8,,,,,,,,,,,,summing_function, 100,100,,,,,,,
+9,,,,,,,,,,,,or, 100,100,,,,,,,
