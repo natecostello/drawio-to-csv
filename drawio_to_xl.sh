@@ -12,5 +12,5 @@ output_file="$2"
 
 # Run the Python scripts in a pipeline, passing the output of each command directly to the next
 drawio_to_csv.py "$input_file" | \
-strip_frontmatter.py | \
+csv_strip_frontmatter.py | \
 csv_to_xl.py > "$output_file"

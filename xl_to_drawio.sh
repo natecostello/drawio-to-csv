@@ -17,5 +17,5 @@ xl_fix_status_case.py | \
 xl_replace_newlines.py | \
 xl_save_id.py | \
 xl_to_csv.py | \
-add_frontmatter.py "$frontmatter_file" | \
+csv_add_frontmatter.py "$frontmatter_file" | \
 csv_to_drawio.sh > "$output_file"

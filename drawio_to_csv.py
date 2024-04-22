@@ -29,7 +29,7 @@ def convertToCSV(filename):
         'estimated_duration', 'estimated_completion_date', 'notes', 'wbs', 'oqe',
         'next_step_id', 'shape', 'width', 'height',
         'decision0_id', 'decision0_label', 'decision1_id', 'decision1_label',
-        'decision2_id', 'decision2_label'
+        'decision2_id', 'decision2_label', 'xl_id'
     ]
 
     # Function to parse the shape from the style string
@@ -66,7 +66,8 @@ def convertToCSV(filename):
                     'oqe': element.get('oqe', ''),
                     'shape': shape,
                     'width': shape_dimensions.get(shape, ('100', '100'))[0],
-                    'height': shape_dimensions.get(shape, ('100', '100'))[1]
+                    'height': shape_dimensions.get(shape, ('100', '100'))[1],
+                    'xl_id': element.get('xl_id', '')
                 }
                 nodes.append(details)
 
