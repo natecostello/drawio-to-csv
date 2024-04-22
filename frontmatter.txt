@@ -25,7 +25,7 @@
 # width: @width
 # height: @height
 # padding: 5
-# ignore: id, next_step_id, shape, width, height, decision0_id, decision0_label, decision1_id, decision1_label, decision2_id, decision2_label
+# ignore: next_step_id, shape, width, height, decision0_id, decision0_label, decision1_id, decision1_label, decision2_id, decision2_label
 # link: url
 # nodespacing: 60
 # levelspacing: 60

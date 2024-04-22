@@ -12,9 +12,9 @@ output_file="$2"
 frontmatter_file="frontmatter.txt"
 
 # Run the Python scripts in a pipeline, passing the output of each command directly to the next
-fix_shape_case.py "$input_file" | \
-fix_status_case.py | \
+xl_fix_shape_case.py "$input_file" | \
+xl_fix_status_case.py | \
+xl_replace_newlines.py | \
 xl_to_csv.py | \
-replace_newlines.py | \
 add_frontmatter.py "$frontmatter_file" | \
 csv_to_drawio.sh > "$output_file"
