@@ -8,8 +8,8 @@ script_dir="/Users/ncos/GithubRepos/drawio-visio-excel-planning"
 export PATH="$PATH:$script_dir"
 
 # Define the input and output files
-input_file="input.drawio"
-final_file="final.drawio"
+input_file="data/test.drawio"
+final_file="data/output.drawio"
 frontmatter_file="frontmatter.txt"
 
 # Run the Python scripts in a pipeline, creating temporary files at each stage
@@ -24,6 +24,8 @@ frontmatter_file="frontmatter.txt"
 drawio_to_csv.py "$input_file" | \
 strip_frontmatter.py | \
 csv_to_xl.py | \
+fix_shape_case.py | \
+fix_status_case.py | \
 xl_to_csv.py | \
 add_frontmatter.py "$frontmatter_file" | \
 csv_to_drawio.sh > "$final_file"
