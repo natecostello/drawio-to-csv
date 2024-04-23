@@ -9,7 +9,7 @@ def process_csv(input_stream, output_stream):
     # Get the headers from the first row
     headers = next(reader)
     # Find the index of the "Process Step ID" column
-    process_step_id_index = headers.index("Process Step ID")
+    process_step_id_index = headers.index("id")
 
     # Add the new "xl_id" header
     headers.append("xl_id")

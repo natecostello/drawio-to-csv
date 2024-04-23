@@ -12,7 +12,7 @@ def process_csv(input_stream, output_stream):
     # Get the headers from the first row
     headers = next(reader)
     # Find the index of the "Shape Type" column
-    shape_type_index = headers.index("Shape Type")
+    shape_type_index = headers.index("shape")
 
     # Write the headers to the output
     writer.writerow(headers)

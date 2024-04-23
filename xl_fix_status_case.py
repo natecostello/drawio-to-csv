@@ -12,7 +12,7 @@ def process_csv(input_stream, output_stream):
     # Get the headers from the first row
     headers = next(reader)
     # Find the index of the "Status" column
-    status_index = headers.index("Status")
+    status_index = headers.index("status")
 
     # Write the headers to the output
     writer.writerow(headers)
