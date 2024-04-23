@@ -14,13 +14,16 @@ def rename_shapes(input_stream, output_stream):
     writer.writerow(headers)
 
     for row in reader:
-        if row[shape_index] == "process" and row[description_index] == "SUM":
-            row[shape_index] = "summing_function"
-            row[description_index] = ""
-        elif row[shape_index] == "process" and row[description_index] == "OR":
+        if row[shape_index] == "process" and row[description_index] == "AND":
             row[shape_index] = "or"
             row[description_index] = ""
-
+        elif row[shape_index] == "process" and row[description_index] == "OR":
+            row[shape_index] = "summing_function"
+            row[description_index] = ""
+        elif row[shape_index] == "end":
+            row[shape_index] = "terminator"
+        elif row[shape_index] == "start":
+            row[shape_index] = "start_1"
         writer.writerow(row)
 
 if __name__ == "__main__":
