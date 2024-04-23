@@ -17,8 +17,8 @@ def parse_decisions(input_stream, output_stream):
 
     for row in reader:
         if row[shape_index] == "decision":
-            decision_ids = row[next_step_id_index].split(',')
-            decision_labels = row[connector_label_index].split(',')
+            decision_ids = [id.strip() for id in row[next_step_id_index].split(',')]
+            decision_labels = [label.strip() for label in row[connector_label_index].split(',')]
             decision_fields = list(zip(decision_ids + [None]*3, decision_labels + [None]*3))[:3]
             row[next_step_id_index] = ""
         else:
