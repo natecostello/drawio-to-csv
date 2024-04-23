@@ -6,7 +6,7 @@
 ## **********************************************************
 ## Configuration
 ## **********************************************************
-# label: %description%<br><br><i>%owner%</i><br>%xl_id%
+# label: %description%<br><b>%xl_id%</b> - <i>%owner%</i>
 ##
 ##
 # styles: { \
