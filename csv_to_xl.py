@@ -24,25 +24,25 @@ def process_csv(input_file):
         decision1_label, decision2_id, decision2_label = row
 
         # Transform 'shape' and corresponding 'description'
-        if shape == "start_1":
-            shape = "start"
-        elif shape == "terminator":
-            shape = "end"
-        elif shape == "summing_function":
-            shape = "process"
-            description = "AND"
-        elif shape == "or":
-            shape = "process"
-            description = "OR"
+        # if shape == "start_1":
+        #     shape = "start"
+        # elif shape == "terminator":
+        #     shape = "end"
+        # elif shape == "summing_function":
+        #     shape = "process"
+        #     description = "AND"
+        # elif shape == "or":
+        #     shape = "process"
+        #     description = "OR"
 
         # Handle decision-specific fields
-        if shape == "decision":
-            decision_ids = [decision0_id, decision1_id, decision2_id]
-            decision_labels = [decision0_label, decision1_label, decision2_label]
-            next_step_id = ', '.join(filter(None, decision_ids))
-            connector_label = ', '.join(filter(None, decision_labels))
-        else:
-            connector_label = ''
+        # if shape == "decision":
+        #     decision_ids = [decision0_id, decision1_id, decision2_id]
+        #     decision_labels = [decision0_label, decision1_label, decision2_label]
+        #     next_step_id = ', '.join(filter(None, decision_ids))
+        #     connector_label = ', '.join(filter(None, decision_labels))
+        # else:
+        #     connector_label = ''
 
         # Compile the transformed row
         output_row = [

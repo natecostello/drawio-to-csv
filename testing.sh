@@ -2,7 +2,7 @@
 
 set -x
 # Define the directory where the Python scripts are located
-script_dir="/Users/ncos/GithubRepos/drawio-visio-excel-planning"
+script_dir="/Users/ncos/GithubRepos/drawio-to-csv"
 
 # Add the script directory to the PATH
 export PATH="$PATH:$script_dir"
