@@ -35,7 +35,7 @@ def convert_to_csv(input_stream, frontmatter_file):
     to move this to a config object that reads a config file.
 
     Returns:
-    str: The draw.io formatted CSV string.
+    io.StringIO: The draw.io formatted CSV stream.
     """
     # Load and parse the XML
     tree = ET.parse(input_stream)
@@ -159,7 +159,8 @@ def convert_to_csv(input_stream, frontmatter_file):
         writer.writerow({key: node.get(key, '') for key in fieldnames})
     # Add a newline
     output.write('\n')
-    return output.getvalue()
+    output.seek(0)
+    return output
 
 def strip_front_matter(input_stream):
     """
@@ -171,26 +172,26 @@ def strip_front_matter(input_stream):
     input_stream (io.TextIOWrapper): The input stream from which to read the front matter.
 
     Returns:
-    str: The content without the front matter.
+    io.StringIO: The content without the front matter.
     """
-    output_content = []
+    output_stream = io.StringIO()
     for line in input_stream:
         if not line.strip().startswith('#'):
-            output_content.append(line)
-    return ''.join(output_content)
+            output_stream.write(line)
+    output_stream.seek(0)
+    return output_stream
 
-def delete_column(csv_content, column_name):
+def delete_column(input_stream, column_name):
     """
     Remove a column from the CSV content.
 
     Args:
-    csv_content (str): The CSV content as a string.
+    input_stream (io.StringIO): The input stream from which to read the CSV content.
     column_name (str): The name of the column to remove.
 
     Returns:
-    str: The CSV content without the specified column.
+    io.StringIO: The CSV content without the specified column.
     """
-    input_stream = io.StringIO(csv_content)
     reader = csv.reader(input_stream)
     output_stream = io.StringIO()
     writer = csv.writer(output_stream, lineterminator='\n')
@@ -206,9 +207,11 @@ def delete_column(csv_content, column_name):
             del row[column_index]
             writer.writerow(row)
     else:
-        return csv_content
+        input_stream.seek(0)
+        return input_stream
 
-    return output_stream.getvalue()
+    output_stream.seek(0)
+    return output_stream
 
 def delete_height_width(input_stream):
     """
@@ -216,32 +219,31 @@ def delete_height_width(input_stream):
 
     This function reads the CSV content from the given input stream,
     removes the 'height' and 'width' columns, and returns the modified
-    CSV content as a string.
+    CSV content as a new stream.
 
     Args:
     input_stream (io.StringIO): The input stream containing the CSV content.
 
     Returns:
-    str: The CSV content without the 'height' and 'width' columns.
-    """    
-    csv_content = input_stream.getvalue()
-    csv_content = delete_column(csv_content, "height")
+    io.StringIO: The CSV content without the 'height' and 'width' columns.
+    """
+    csv_content = delete_column(input_stream, "height")
     csv_content = delete_column(csv_content, "width")
     return csv_content
 
 def replace_ids_with_xl_ids(input_stream):
     """
-    Rename the 'id' column with the 'xl_id' column in the CSV content.
+    Replace the 'id' column values with the 'xl_id' column values in the CSV content.
 
     This function reads the CSV content from the given input stream,
-    renames the 'id' column with the 'xl_id' column, and returns the modified
-    CSV content as a string.
+    replaces the 'id' column values with the 'xl_id' column values, and returns the modified
+    CSV content as a stream.
 
     Args:
     input_stream (io.StringIO): The input stream containing the CSV content.
 
     Returns:
-    str: The CSV content with the 'id' column renamed to 'xl_id'.
+    io.StringIO: The CSV content with the 'id' column renamed to 'xl_id'.
     """
     reader = csv.reader(input_stream)
     output_stream = io.StringIO()
@@ -286,5 +288,66 @@ def replace_ids_with_xl_ids(input_stream):
 
         # Write the modified row to the new CSV file
         writer.writerow(row)
+    
+    output_stream.seek(0)
 
-    return output_stream.getvalue()
+    return output_stream
+
+def delete_xl_ids(input_stream):
+    """
+    Remove the 'xl_id' column from the CSV content.
+
+    This function reads the CSV content from the given input stream,
+    removes the 'xl_id' column, and returns the modified CSV content as a new stream.
+
+    Args:
+    input_stream (io.StringIO): The input stream containing the CSV content.
+
+    Returns:
+    io.StringIO: The CSV content without the 'xl_id' column.
+    """
+    return delete_column(input_stream, "xl_id")
+
+def rename_shapes(input_stream):
+    """
+    Rename shapes in the CSV content.
+
+    This function reads the CSV content from the given input stream,
+    renames shapes based on predefined mappings, and returns the modified
+    CSV content as a new stream.
+
+    Args:
+    input_stream (io.StringIO): The input stream containing the CSV content.
+
+    Returns:
+    io.StringIO: The CSV content with shapes renamed.
+    """
+    reader = csv.DictReader(input_stream)
+    output_stream = io.StringIO()
+    writer = csv.DictWriter(output_stream, fieldnames=reader.fieldnames, lineterminator='\n')
+    #TODO this function depends on a non-required column 'description' which is not present in the input file
+    #TODO consider if there is a better way to do this
+    
+    # Check if 'description' column is present in the input file and  create it if not
+    if 'description' not in reader.fieldnames:
+        reader.fieldnames.append('description')
+        writer.writeheader()
+    else:
+        writer.writeheader()
+
+    for row in reader:
+        if row['shape'] == 'start_1':
+            row['shape'] = 'start'
+        elif row['shape'] == 'terminator':
+            row['shape'] = 'end'
+        elif row['shape'] == 'summing_function':
+            row['shape'] = 'process'
+            row['description'] = 'OR'
+        elif row['shape'] == 'or':
+            row['shape'] = 'process'
+            row['description'] = 'AND'
+        writer.writerow(row)
+
+    output_stream.seek(0)
+    return output_stream
+    
