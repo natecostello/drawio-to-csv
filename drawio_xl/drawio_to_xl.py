@@ -103,10 +103,7 @@ def convert_to_csv(input_stream, frontmatter_file):
                     'shape': shape,
                     'width': shape_dimensions.get(shape, ('100', '100'))[0], # default to 100 if the shape is not found
                     'height': shape_dimensions.get(shape, ('100', '100'))[1], # default to 100 if the shape is not found
-                    'xl_id': element.get('xl_id', element.get('id')), # default to the id if no xl_id is present                   
-                    # 'owner': element.get('owner', ''),
-                    # 'description': element.get('description', ''),
-                    # 'status': element.get('status', ''),
+                    'xl_id': element.get('xl_id', element.get('id')), # default to the id if no xl_id is present
                 }
 
                 # add all the other properties from the element
@@ -351,3 +348,56 @@ def rename_shapes(input_stream):
     output_stream.seek(0)
     return output_stream
     
+def parse_decisions(input_stream):
+    """
+    This function parses decision-related fields in a CSV data stream. It combines decision_id and decision_label fields
+    into a single field, and removes the original decision_id and decision_label fields. The number of decision fields 
+    is determined by the max_decision_count variable.
+
+    Parameters:
+    input_stream (io.StringIO): The input stream containing the CSV data.
+
+    Returns:
+    io.StringIO: A new stream with the parsed decision fields.
+    """
+    #TODO generalize to number provided in config
+    max_decision_count = 3
+
+    # first pass
+    reader = csv.reader(input_stream)
+    output = io.StringIO()
+    writer = csv.writer(output)
+
+    headers = next(reader)
+    shape_index = headers.index('shape')
+    next_step_id_index = headers.index('next_step_id')
+
+    decision_id_indices = [headers.index(f'decision{i}_id') for i in range(max_decision_count)]
+    decision_label_indices = [headers.index(f'decision{i}_label') for i in range(max_decision_count)]
+
+    headers.append('connector_label')
+    connector_label_index = headers.index('connector_label')
+    
+    writer.writerow(headers)
+
+    for row in reader:
+        row.append('') # Append the connector_label field to the row
+        # Handle decision-specific fields
+        if row[shape_index] == "decision":
+            decision_ids = [row[index] for index in decision_id_indices]
+            decision_labels = [row[index] for index in decision_label_indices]
+            row[next_step_id_index] = ', '.join(filter(None, decision_ids))
+            row[connector_label_index] = ', '.join(filter(None, decision_labels))
+        else:
+            row[connector_label_index] = ''
+
+        writer.writerow(row)
+    
+    # second pass
+    output.seek(0)
+
+    for i in range(max_decision_count):
+        output = delete_column(output, f'decision{i}_id')
+        output = delete_column(output, f'decision{i}_label')
+
+    return output

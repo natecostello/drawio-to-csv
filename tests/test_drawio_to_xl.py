@@ -7,6 +7,7 @@ from drawio_xl.drawio_to_xl import delete_height_width
 from drawio_xl.drawio_to_xl import replace_ids_with_xl_ids  
 from drawio_xl.drawio_to_xl import delete_xl_ids  
 from drawio_xl.drawio_to_xl import rename_shapes
+from drawio_xl.drawio_to_xl import parse_decisions
 
 class TestConvertToCSV(unittest.TestCase):
     def test_convert_to_csv(self):
@@ -89,6 +90,23 @@ class TestRenameShapes(unittest.TestCase):
         actual_output_stream = rename_shapes(input_stream)
         actual_output = actual_output_stream.read()
         self.assertEqual(actual_output, expected_output)
+
+class TestParseDecisions(unittest.TestCase):
+    def test_parse_decisions(self):
+        self.maxDiff = None
+        input_data = """shape,next_step_id,decision0_id,decision0_label,decision1_id,decision1_label,decision2_id,decision2_label
+decision,,id0,label0,id1,label1,id2,label2
+other,step_id,,,,,,
+decision,,id3,label3,id4,label4,id5,label5
+"""
+        expected_output = """shape,next_step_id,connector_label
+decision,"id0, id1, id2","label0, label1, label2"
+other,step_id,
+decision,"id3, id4, id5","label3, label4, label5"
+"""
+        input_stream = io.StringIO(input_data)
+        output_stream = parse_decisions(input_stream)
+        self.assertEqual(expected_output, output_stream.getvalue())
 
 if __name__ == '__main__':
     unittest.main()
