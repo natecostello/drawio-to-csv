@@ -155,7 +155,7 @@ def convert_to_csv(input_stream, frontmatter_file):
     for node in nodes:
         writer.writerow({key: node.get(key, '') for key in fieldnames})
     # Add a newline
-    output.write('\n')
+    #output.write('\n') #deleted because this is not needed.
     output.seek(0)
     return output
 
@@ -401,3 +401,213 @@ def parse_decisions(input_stream):
         output = delete_column(output, f'decision{i}_label')
 
     return output
+
+def insert_newlines(input_stream):
+    """
+    This function replaces '<br>' tags with newline characters ('\n') in each cell of the CSV data read from the input stream.
+
+    Parameters:
+    input_stream (io.StringIO): The input stream containing the CSV data.
+
+    Returns:
+    io.StringIO: A new stream with '<br>' tags replaced by newline characters in each cell.
+    """
+    reader = csv.reader(input_stream)
+    output_stream = io.StringIO()
+    writer = csv.writer(output_stream, lineterminator='\n')
+    for row in reader:
+        modified_row = [cell.replace('<br>', '\n') for cell in row]
+        writer.writerow(modified_row)
+
+    output_stream.seek(0)
+    return output_stream
+
+def rename_headers(input_stream):
+    """
+    This function renames the headers of the CSV data read from the input stream. 
+
+    The headers 'id', 'shape', 'connector_label', and 'next_step_id' are renamed to 'Process Step ID', 'Shape Type', 'Connector Label', and 'Next Step ID', respectively. 
+
+    All other headers are transformed by replacing underscores with spaces and capitalizing the first letter of each word.
+
+    Parameters:
+    input_stream (io.StringIO): The input stream containing the CSV data.
+
+    Returns:
+    io.StringIO: A new stream with renamed headers.
+    """
+
+    #TODO naming should be pulled from a config file
+    fixed_headers = ['id', 'shape', 'connector_label', 'next_step_id']
+
+    reader = csv.reader(input_stream)
+    output_stream = io.StringIO()
+    writer = csv.writer(output_stream, lineterminator='\n')
+
+    headers = next(reader)
+
+    # for all headers not in fixed_headers, replace underscores with spaces and capitalize the first letter of each word
+    headers = [header.replace('_', ' ').title() if header not in fixed_headers else header for header in headers]
+    
+    # rename fixed headers
+    headers[headers.index('id')] = 'Process Step ID'
+    headers[headers.index('shape')] = 'Shape Type'
+    headers[headers.index('connector_label')] = 'Connector Label'
+    headers[headers.index('next_step_id')] = 'Next Step ID'
+    
+    writer.writerow(headers)
+
+    for row in reader:
+        writer.writerow(row)
+    
+    output_stream.seek(0)
+    return output_stream
+
+def reorder_headers(input_stream):
+    """
+    This function reorders the headers of the CSV data read from the input stream. 
+
+    The headers are reordered according to a hardcoded predefined list. Headers not in this list are sorted alphabetically and appended after the ordered headers.
+
+    Parameters:
+    input_stream (io.StringIO): The input stream containing the CSV data.
+
+    Returns:
+    io.StringIO: A new stream with reordered headers.
+    """
+
+    #TODO This should be pulled from a config file
+    header_order = ["Process Step ID","Owner","Description","Status","Function","Phase","Estimated Duration","Estimated Completion Date","Notes","Wbs","Oqe","Next Step ID","Shape Type","Connector Label"]
+
+    reader = csv.reader(input_stream)
+    output_stream = io.StringIO()
+    writer = csv.writer(output_stream, lineterminator='\n')
+
+    # reorder the headers and row elements to match the header_order list
+    original_headers = next(reader)
+    ordered_headers = [header for header in header_order if header in original_headers]
+    
+    remaining_headers = [header for header in original_headers if header not in header_order]
+    remaining_headers.sort() # sort any remaining headers alphabetically
+    headers = ordered_headers + remaining_headers
+
+    writer.writerow(headers)
+
+    # reorder the row elements to match the header_order list
+    for row in reader:
+        row_dict = dict(zip(original_headers, row))
+        row = [row_dict[header] for header in headers]
+        writer.writerow(row)
+    
+    output_stream.seek(0)
+    return output_stream
+
+def drawio_to_xl(input_stream):
+    """
+    This function processes a draw.io XML file and converts it to an Excel file.
+
+    The function performs the following steps:
+    1. Convert the draw.io XML file to a CSV file.
+    2. Strip the front matter from the CSV file.
+    3. Delete the 'height' and 'width' columns from the CSV file.
+    4. Rename the 'id' column to 'xl_id' in the CSV file.
+    5. Delete the 'xl_id' column from the CSV file.
+    6. Rename the shapes in the CSV file.
+    7. Parse decision-related fields in the CSV file.
+    8. Insert newlines in the CSV file.
+    9. Rename the headers in the CSV file.
+    10. Reorder the headers in the CSV file.
+
+    Parameters:
+    input_stream (io.StringIO): The input stream containing the draw.io XML data.
+
+    Returns:
+    io.StringIO: The output stream containing the processed Excel data.
+    """
+    #output_stream = convert_to_csv(input_stream, 'frontmatter.txt')
+    #output_stream = strip_front_matter(output_stream)
+    #output_stream = delete_height_width(output_stream)
+    #output_stream = replace_ids_with_xl_ids(output_stream)
+    #output_stream = delete_xl_ids(output_stream)
+    #output_stream = rename_shapes(output_stream)
+    #output_stream = parse_decisions(output_stream)
+    #output_stream = insert_newlines(output_stream)
+    #output_stream = rename_headers(output_stream)
+    #output_stream = reorder_headers(output_stream)
+    #return output_stream
+
+    output_stream = convert_to_csv(input_stream, 'frontmatter.txt')
+    with open('tests/debug_output/0_convert_to_csv.csv', 'w') as f:
+        f.write(output_stream.getvalue())
+    output_stream.seek(0)
+
+    output_stream = strip_front_matter(output_stream)
+    with open('tests/debug_output/1_strip_front_matter.csv', 'w') as f:
+        f.write(output_stream.getvalue())
+    output_stream.seek(0)
+
+    output_stream = delete_height_width(output_stream)
+    with open('tests/debug_output/2_delete_height_width.csv', 'w') as f:
+        f.write(output_stream.getvalue())
+    output_stream.seek(0)
+
+    output_stream = replace_ids_with_xl_ids(output_stream)
+    with open('tests/debug_output/3_replace_ids_with_xl_ids.csv', 'w') as f:
+        f.write(output_stream.getvalue())
+    output_stream.seek(0)
+
+    output_stream = delete_xl_ids(output_stream)
+    with open('tests/debug_output/4_delete_xl_ids.csv', 'w') as f:
+        f.write(output_stream.getvalue())
+    output_stream.seek(0)
+
+    output_stream = rename_shapes(output_stream)
+    with open('tests/debug_output/5_rename_shapes.csv', 'w') as f:
+        f.write(output_stream.getvalue())
+    output_stream.seek(0)
+
+    output_stream = parse_decisions(output_stream)
+    with open('tests/debug_output/6_parse_decisions.csv', 'w') as f:
+        f.write(output_stream.getvalue())
+    output_stream.seek(0)
+
+    output_stream = insert_newlines(output_stream)
+    with open('tests/debug_output/7_insert_newlines.csv', 'w') as f:
+        f.write(output_stream.getvalue())
+    output_stream.seek(0)
+
+    output_stream = rename_headers(output_stream)
+    with open('tests/debug_output/8_rename_headers.csv', 'w') as f:
+        f.write(output_stream.getvalue())
+    output_stream.seek(0)
+
+    output_stream = reorder_headers(output_stream)
+    with open('tests/debug_output/9_reorder_headers.csv', 'w') as f:
+        f.write(output_stream.getvalue())
+    output_stream.seek(0)
+
+    return output_stream
+
+def main():
+    # Create the argument parser
+    parser = argparse.ArgumentParser(description='Convert a drawio file to a CSV file.')
+    parser.add_argument('input_file', help='The input drawio file.')
+    parser.add_argument('output_file', help='The output CSV file.')
+
+    # Parse the command-line arguments
+    args = parser.parse_args()
+
+    # Read the input file
+    with open(args.input_file, 'r') as f:
+        input_data = f.read()
+    input_stream = io.StringIO(input_data)
+
+    # Call the drawio_to_xl function
+    output_stream = drawio_to_xl(input_stream)
+
+    # Write the output to the output file
+    with open(args.output_file, 'w') as f:
+        f.write(output_stream.getvalue())
+
+if __name__ == '__main__':
+    main()

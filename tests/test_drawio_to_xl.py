@@ -1,5 +1,8 @@
 import unittest
 import io
+import subprocess
+import os
+
 from drawio_xl.drawio_to_xl import convert_to_csv  
 from drawio_xl.drawio_to_xl import strip_front_matter  
 from drawio_xl.drawio_to_xl import delete_column
@@ -8,6 +11,10 @@ from drawio_xl.drawio_to_xl import replace_ids_with_xl_ids
 from drawio_xl.drawio_to_xl import delete_xl_ids  
 from drawio_xl.drawio_to_xl import rename_shapes
 from drawio_xl.drawio_to_xl import parse_decisions
+from drawio_xl.drawio_to_xl import insert_newlines
+from drawio_xl.drawio_to_xl import rename_headers
+from drawio_xl.drawio_to_xl import reorder_headers
+from drawio_xl.drawio_to_xl import drawio_to_xl
 
 class TestConvertToCSV(unittest.TestCase):
     def test_convert_to_csv(self):
@@ -107,6 +114,101 @@ decision,"id3, id4, id5","label3, label4, label5"
         input_stream = io.StringIO(input_data)
         output_stream = parse_decisions(input_stream)
         self.assertEqual(expected_output, output_stream.getvalue())
+
+class TestInsertNewlines(unittest.TestCase):
+    def test_insert_newlines(self):
+        self.maxDiff = None
+        input_data = """shape,next_step_id,decision
+decision,,id0<br>id1<br>id2
+other,step_id,
+decision,,id3<br>id4<br>id5
+"""
+        expected_output = """shape,next_step_id,decision
+decision,,"id0
+id1
+id2"
+other,step_id,
+decision,,"id3
+id4
+id5"
+"""
+        input_stream = io.StringIO(input_data)
+        output_stream = insert_newlines(input_stream)
+        self.assertEqual(expected_output, output_stream.getvalue())
+
+
+class TestRenameHeaders(unittest.TestCase):
+    def test_rename_headers(self):
+        input_data = """id,shape,connector_label,next_step_id,other_header
+1,decision,label1,2,other_value
+"""
+        expected_output = """Process Step ID,Shape Type,Connector Label,Next Step ID,Other Header
+1,decision,label1,2,other_value
+"""
+        input_stream = io.StringIO(input_data)
+        output_stream = rename_headers(input_stream)
+        self.assertEqual(expected_output, output_stream.getvalue())
+
+class TestReorderHeaders(unittest.TestCase):
+    def test_reorder_headers(self):
+        input_data = """Description,Owner,Process Step ID,Notes,Status
+desc1,owner1,1,note1,status1
+desc2,owner2,2,note2,status2
+"""
+        expected_output = """Process Step ID,Owner,Description,Status,Notes
+1,owner1,desc1,status1,note1
+2,owner2,desc2,status2,note2
+"""
+        input_stream = io.StringIO(input_data)
+        output_stream = reorder_headers(input_stream)
+        self.assertEqual(expected_output, output_stream.getvalue())
+
+class TestDrawioToXl(unittest.TestCase):
+    def test_drawio_to_xl(self):
+        # Read the input file
+        with open('tests/test_drawio.drawio', 'r') as f:
+            input_data = f.read()
+        input_stream = io.StringIO(input_data)
+
+        # Read the expected output file
+        with open('tests/test_xl.csv', 'r') as f:
+            expected_output = f.read()
+
+        # Call the function and get the actual output
+        output_stream = drawio_to_xl(input_stream)
+        actual_output = output_stream.getvalue()
+
+        # Compare the actual output with the expected output
+        self.assertEqual(expected_output, actual_output)
+
+
+class TestCommandLineInterface(unittest.TestCase):
+    def setUp(self):
+        self.output_file = 'tests/test_output.csv'
+
+    def test_drawio_to_xl(self):
+        # Call the script with the input and output files
+        result = subprocess.run(['python3', 'drawio_xl/drawio_to_xl.py', 'tests/test_drawio.drawio', self.output_file], capture_output=True)
+
+        # Check if the script exited without errors
+        self.assertEqual(result.returncode, 0)
+
+        # Check if the output file was created
+        self.assertTrue(os.path.exists(self.output_file))
+
+        # Read the output file and the expected output file
+        with open(self.output_file, 'r') as f:
+            output = f.read()
+        with open('tests/test_xl.csv', 'r') as f:
+            expected_output = f.read()
+
+        # Check if the output matches the expected output
+        self.assertEqual(output, expected_output)
+
+    def tearDown(self):
+        # Delete the output file
+        if os.path.exists(self.output_file):
+            os.remove(self.output_file)
 
 if __name__ == '__main__':
     unittest.main()
