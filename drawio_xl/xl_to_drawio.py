@@ -1,5 +1,22 @@
 import io
 import csv
+import subprocess
+import tempfile
+
+
+if __name__ == '__main__':
+    from utils import delete_column
+    from utils import delete_non_utf8
+    from utils import delete_empty_cols
+    from utils import delete_empty_rows
+
+else:
+    from drawio_xl.utils import delete_column
+    from drawio_xl.utils import delete_non_utf8
+    from drawio_xl.utils import delete_empty_cols
+    from drawio_xl.utils import delete_empty_rows
+
+
 
 # Run the Python scripts in a pipeline, passing the output of each command directly to the next
 # xl_delete_non_utf8.py "$input_file" | \
@@ -16,83 +33,6 @@ import csv
 # csv_add_frontmatter.py "$frontmatter_file" | \
 # csv_to_drawio.sh > "$output_file"
 
-def delete_non_utf8(input_stream):
-    """
-    Deletes non-UTF-8 characters from the input stream.
-
-    This function reads each line from the input stream, decodes it as UTF-8 while ignoring any errors,
-    and writes the line to a new output stream. The output stream is then returned.
-
-    Args:
-        input_stream (io.StringIO): The input stream.
-
-    Returns:
-        io.StringIO: The output stream with non-UTF-8 characters deleted.
-    """
-    output_stream = io.StringIO()
-    for line in input_stream:
-        line = line.decode('utf-8', 'ignore') # Decode the line as UTF-8, ignoring any errors
-        output_stream.write(line)
-
-    output_stream.seek(0)
-    return output_stream
-
-def delete_empty_cols(input_stream):
-    """
-    Deletes empty columns from the input CSV stream.
-
-    This function reads a CSV from the input stream, removes any columns where the header is empty,
-    and writes the remaining columns to a new output stream. The output stream is then returned.
-
-    Args:
-        input_stream (io.StringIO): The input stream containing the CSV data.
-
-    Returns:
-        io.StringIO: The output stream with empty columns deleted.
-
-    Note:
-        This function assumes that the first row of the CSV contains the headers.
-    """
-    output_stream = io.StringIO()
-    reader = csv.reader(input_stream)
-    writer = csv.writer(output_stream, lineterminator='\n')
-
-    headers = next(reader)
-    indices = [i for i, h in enumerate(headers) if h]
-
-    # Write the non-empty headers to the output
-    writer.writerow([headers[i] for i in indices])
-
-    for row in reader:
-        writer.writerow([row[i] for i in indices])
-    
-    output_stream.seek(0)
-    return output_stream
-
-def delete_empty_rows(input_stream):
-    """
-    Deletes empty rows from the input CSV stream.
-
-    This function reads a CSV from the input stream, removes any rows that are empty or contain only whitespace,
-    and writes the remaining rows to a new output stream. The output stream is then returned.
-
-    Args:
-        input_stream (io.StringIO): The input stream containing the CSV data.
-
-    Returns:
-        io.StringIO: The output stream with empty rows deleted.
-    """
-    output_stream = io.StringIO()
-    reader = csv.reader(input_stream)
-    writer = csv.writer(output_stream, lineterminator='\n')
-
-    for row in reader:
-        # Check if the row is not empty
-        if any(field.strip() for field in row):
-            writer.writerow(row)
-    
-    output_stream.seek(0)
-    return output_stream
 
 def rename_headers(input_stream):
     """
@@ -141,30 +81,362 @@ def rename_headers(input_stream):
     output_stream.seek(0)
     return output_stream
 
-def fix_shape_case(input_stream):
-    pass
+def lower_shape_case(input_stream):
+    """
+    Converts the 'shape' column values to lowercase in the input CSV stream.
 
-def fix_status_case(input_stream):
-    pass
+    This function reads a CSV from the input stream, finds the 'shape' column, and converts all its values to lowercase.
+    The modified CSV is written to a new output stream, which is then returned.
+
+    Args:
+        input_stream (io.StringIO): The input stream containing the CSV data.
+
+    Returns:
+        io.StringIO: The output stream with 'shape' column values converted to lowercase.
+    """
+    output_stream = io.StringIO()
+    reader = csv.reader(input_stream)
+    writer = csv.writer(output_stream, lineterminator='\n')
+
+    # Get the headers from the first row
+    headers = next(reader)
+    # Find the index of the "shape" column
+    shape_type_index = headers.index("shape")
+
+    # Write the headers to the output
+    writer.writerow(headers)
+
+    # Iterate over the rows in the original CSV file
+    for row in reader:
+        # Convert the "shape" entry to lowercase
+        row[shape_type_index] = row[shape_type_index].lower()
+        # Write the modified row to the new CSV file
+        writer.writerow(row)
+    
+    output_stream.seek(0)
+    return output_stream
+
+def lower_status_case(input_stream):
+    """
+    Converts the 'status' column values to lowercase in the input CSV stream.
+
+    This function reads a CSV from the input stream, finds the 'status' column, and converts all its values to lowercase.
+    The modified CSV is written to a new output stream, which is then returned.
+
+    Args:
+        input_stream (io.StringIO): The input stream containing the CSV data.
+
+    Returns:
+        io.StringIO: The output stream with 'status' column values converted to lowercase.
+    """
+    output_stream = io.StringIO()
+    reader = csv.reader(input_stream)
+    writer = csv.writer(output_stream, lineterminator='\n')
+
+    # Get the headers from the first row
+    headers = next(reader)
+    # Find the index of the "status" column
+    status_index = headers.index("status")
+
+    # Write the headers to the output
+    writer.writerow(headers)
+
+    # Iterate over the rows in the original CSV file and change case
+    for row in reader:
+        row[status_index] = row[status_index].lower()
+        writer.writerow(row)
+
+    output_stream.seek(0)
+    return output_stream
 
 def replace_newlines(input_stream):
-    pass
+    """
+    Replaces newline and carriage return characters in the input CSV stream with "<br>".
+
+    This function reads a CSV from the input stream, finds any fields that contain newline or carriage return characters, 
+    and replaces them with "<br>". The modified CSV is written to a new output stream, which is then returned.
+
+    Args:
+        input_stream (io.StringIO): The input stream containing the CSV data.
+
+    Returns:
+        io.StringIO: The output stream with newline and carriage return characters replaced with "<br>".
+    """
+    output_stream = io.StringIO()
+    # Create a CSV reader
+    reader = csv.reader(input_stream)
+    # Create a CSV writer
+    writer = csv.writer(output_stream, lineterminator='\n')
+
+    # Iterate over the rows in the original CSV file
+    for row in reader:
+        # Replace newline and carriage return characters with "<br>" in each cell
+        modified_row = [cell.replace('\n', '<br>').replace('\r', '<br>') for cell in row]
+        # Write the modified row to the new CSV file
+        writer.writerow(modified_row)
+    
+    output_stream.seek(0)
+    return output_stream
 
 def save_id(input_stream):
-    pass
+    """
+    Copies the 'id' column to a new 'xl_id' column in the input CSV stream.
+
+    This function reads a CSV from the input stream, finds the 'id' column, 
+    and copies its values to a new 'xl_id' column. The modified CSV is written 
+    to a new output stream, which is then returned.
+
+    Args:
+        input_stream (io.StringIO): The input stream containing the CSV data.
+
+    Returns:
+        io.StringIO: The output stream with the added 'xl_id' column.
+    """
+
+    output_stream = io.StringIO()
+    # Create a CSV reader
+    reader = csv.reader(input_stream)
+    # Get the headers from the first row
+    headers = next(reader)
+    # Find the index of the "id" column
+    id_index = headers.index("id")
+
+    # Add the new "xl_id" header
+    headers.append("xl_id")
+
+    # Create a CSV writer
+    writer = csv.writer(output_stream, lineterminator='\n')
+    # Write the headers to the output
+    writer.writerow(headers)
+
+    # Iterate over the rows in the original CSV file
+    for row in reader:
+        # Copy the value from "id" to "xl_id"
+        row.append(row[id_index])
+        # Write the modified row to the new CSV file
+        writer.writerow(row)
+    
+    output_stream.seek(0)
+    return output_stream
 
 def rename_shapes(input_stream):
-    pass
+    """
+    Renames certain 'shape' values in the input CSV stream based on their 'description' values.
 
-def add_height_width(input_stream):
-    pass
+    This function reads a CSV from the input stream, finds the 'shape' and 'description' columns, 
+    and renames certain 'shape' values based on their corresponding 'description' values. 
+    The modified CSV is written to a new output stream, which is then returned.
+
+    Specifically, if a row's 'shape' is "process" and its 'description' is "AND", the 'shape' is 
+    renamed to "or" and the 'description' is cleared. If a row's 'shape' is "process" and its 
+    'description' is "OR", the 'shape' is renamed to "summing_function" and the 'description' is cleared. 
+    If a row's 'shape' is "end", the 'shape' is renamed to "terminator". If a row's 'shape' is "start", 
+    the 'shape' is renamed to "start_1".
+
+    Args:
+        input_stream (io.StringIO): The input stream containing the CSV data.
+
+    Returns:
+        io.StringIO: The output stream with the renamed 'shape' values.
+    """
+    #TODO consider a dedicated column to handle AND and OR
+    #TODO changes would need to be propagated to the drawio_to_xl side
+
+    output_stream = io.StringIO()
+    reader = csv.reader(input_stream)
+    writer = csv.writer(output_stream, lineterminator='\n')
+
+    headers = next(reader)
+    shape_index = headers.index('shape')
+    description_index = headers.index('description')
+
+    writer.writerow(headers)
+
+    for row in reader:
+        if row[shape_index] == "process" and row[description_index] == "AND":
+            row[shape_index] = "or"
+            row[description_index] = ""
+        elif row[shape_index] == "process" and row[description_index] == "OR":
+            row[shape_index] = "summing_function"
+            row[description_index] = ""
+        elif row[shape_index] == "end":
+            row[shape_index] = "terminator"
+        elif row[shape_index] == "start":
+            row[shape_index] = "start_1"
+        writer.writerow(row)
+    
+    output_stream.seek(0)
+    return output_stream
+
+def insert_height_width(input_stream):
+    """
+    Inserts 'width' and 'height' columns into the input CSV stream based on the 'shape' column.
+
+    This function reads a CSV from the input stream, finds the 'shape' column, and inserts 'width' 
+    and 'height' columns based on the 'shape' value. The dimensions for each shape are defined in 
+    the `shape_dimensions` dictionary. If a shape is not found in the dictionary, default dimensions 
+    of '100' (width) and '100' (height) are used. The modified CSV is written to a new output stream, 
+    which is then returned.
+
+    Args:
+        input_stream (io.StringIO): The input stream containing the CSV data.
+
+    Returns:
+        io.StringIO: The output stream with the added 'width' and 'height' columns.
+    """
+    output_stream = io.StringIO()
+    reader = csv.reader(input_stream)
+    writer = csv.writer(output_stream, lineterminator='\n')
+
+    headers = next(reader)
+    shape_index = headers.index('shape')
+
+    headers.extend(['width', 'height'])
+    writer.writerow(headers)
+
+    #TODO these should come from a config file
+    shape_dimensions = {
+        'decision': ('100', '100'),
+        'process': ('200', '100'),
+        'or': ('100', '100'),
+        'start_1': ('100', '100'),
+        'terminator': ('100', '50'),
+        'predefined_process': ('200', '100'),
+        'data': ('200', '100'),
+        'document': ('200', '100'),
+    }
+
+    for row in reader:
+        shape = row[shape_index]
+        width, height = shape_dimensions.get(shape, ('100', '100'))
+        row.extend([width, height])
+
+        writer.writerow(row)
+    
+    output_stream.seek(0)
+    return output_stream
 
 def parse_decisions(input_stream):
-    pass
+    """
+    Parses a CSV file containing decision data and transforms it into a format suitable for further processing.
+
+    The function reads from an input stream, which should be a CSV file with headers. The CSV file should contain columns named 'shape', 'next_step_id', and 'connector_label'. Rows where 'shape' is 'decision' are treated specially.
+
+    For each 'decision' row, the 'next_step_id' and 'connector_label' fields are split into multiple fields. The number of fields is determined by the `max_decision_count` variable. The split fields are appended to the row, and the original 'next_step_id' field is cleared.
+
+    For non-'decision' rows, the same number of empty fields are appended.
+
+    The function then removes the 'connector_label' column from the CSV data.
+
+    The transformed CSV data is returned as a string.
+
+    Args:
+        input_stream (io.TextIOWrapper): The input stream to read the CSV data from.
+
+    Returns:
+        io.StringIO: A stream containing the transformed CSV data.
+    """
+        # first pass
+    reader = csv.reader(input_stream)
+    output_stream = io.StringIO()
+    writer = csv.writer(output_stream, lineterminator='\n')
+    #writer = csv.writer(output_stream)
+
+    # TODO generalize to number provided in config
+    max_decision_count = 3
+
+
+    headers = next(reader)
+    shape_index = headers.index('shape')
+    next_step_id_index = headers.index('next_step_id')
+    connector_label_index = headers.index('connector_label')
+
+    headers.extend([f'decision{i}_{suffix}' for i in range(max_decision_count) for suffix in ['id', 'label']])
+    
+    writer.writerow(headers)
+
+    for row in reader:
+        if row[shape_index] == "decision":
+            decision_ids = [id.strip() for id in row[next_step_id_index].replace('"', '').split(',')]
+            decision_labels = [label.strip() for label in row[connector_label_index].replace('"', '').split(',')]
+            decision_fields = list(zip(decision_ids + [None]*max_decision_count, decision_labels + [None]*max_decision_count))[:max_decision_count]
+            row[next_step_id_index] = ""
+        else:
+            decision_fields = [(None, None)] * max_decision_count
+
+        row.extend([item for sublist in decision_fields for item in sublist])
+
+        writer.writerow(row)
+    
+    # delete 'connector_label'
+    output_stream.seek(0)
+    output_stream = delete_column(output_stream, 'connector_label')
+    
+    return output_stream
 
 def add_frontmatter(input_stream, frontmatter_file):
-    pass
+    """
+    This function takes an input stream and a file path to a frontmatter file. 
+    It reads the frontmatter file and writes its content to a new output stream. 
+    Then it reads the input stream and writes its content to the output stream. 
+    The output stream is returned, with the pointer set back to the start of the stream.
+
+    Parameters:
+    input_stream (io.StringIO): The input stream to read from.
+    frontmatter_file (str): The path to the frontmatter file.
+
+    Returns:
+    output_stream (io.StringIO): The output stream with the frontmatter content prepended.
+    """
+    
+    # create an output stream
+    output_stream = io.StringIO()
+    
+    # Read and store the frontmatter
+    with open(frontmatter_file, 'r') as frontmatter_file:
+        frontmatter_content = frontmatter_file.read()
+    
+    # write the frontmatter to the output stream
+    output_stream.write(frontmatter_content)
+    
+    # Then write the input stream
+    output_stream.write(input_stream.read())
+    
+    output_stream.seek(0)
+    return output_stream
 
 def csv_to_drawio(input_stream):
-    pass
+    """
+    Converts a CSV file to a Draw.io diagram using the Draw.io command-line tool.
 
+    This function creates temporary files for the input and output, writes the contents of the input stream to the input file,
+    runs the Draw.io command-line tool to convert the input file to a Draw.io diagram, and writes the output to the output file.
+    The function then reads the output file into a string stream and returns it.
+
+    The temporary input and output files are automatically deleted when they are no longer needed.
+
+    Args:
+        input_stream (io.StringIO): The input stream containing the CSV data.
+
+    Returns:
+        io.StringIO: A string stream containing the Draw.io diagram.
+
+    Raises:
+        subprocess.CalledProcessError: If the Draw.io command fails.
+    """
+    # Create temporary files for the input and output
+    with tempfile.NamedTemporaryFile(delete=True, mode='w+') as temp_input, tempfile.NamedTemporaryFile(delete=True, mode='w+') as temp_output:
+        # Write the contents of the input stream to the temporary input file
+        temp_input.write(input_stream.read())
+        temp_input.flush()  # Ensure all data is written to the file
+
+        # Construct the command to run Draw.io
+        drawio_path = "/Applications/draw.io.app/Contents/MacOS/draw.io"
+        command = [drawio_path, "-x", temp_input.name, "-f", "xml", "-o", temp_output.name]
+
+        # Run the command
+        subprocess.run(command, check=True)
+
+        # Read the output file into a string stream and return it
+        temp_output.seek(0)
+        return io.StringIO(temp_output.read())

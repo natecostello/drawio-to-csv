@@ -5,7 +5,6 @@ import os
 
 from drawio_xl.drawio_to_xl import convert_to_csv  
 from drawio_xl.drawio_to_xl import strip_front_matter  
-from drawio_xl.drawio_to_xl import delete_column
 from drawio_xl.drawio_to_xl import delete_height_width
 from drawio_xl.drawio_to_xl import replace_ids_with_xl_ids  
 from drawio_xl.drawio_to_xl import delete_xl_ids  
@@ -44,21 +43,6 @@ class TestStripFrontMatter(unittest.TestCase):
         input_data = io.StringIO("# This is a comment\nThis is not a comment\n# Another comment")
         expected_output = "This is not a comment\n"
         actual_output_stream = strip_front_matter(input_data)
-        actual_output = actual_output_stream.read()
-        self.assertEqual(actual_output, expected_output)
-
-class TestDeleteColumn(unittest.TestCase):
-    def test_delete_column(self):
-        csv_content = io.StringIO("name,age,height\nAlice,20,160\nBob,25,175\n")
-        expected_output = "name,age\nAlice,20\nBob,25\n"
-        actual_output_stream = delete_column(csv_content, "height")
-        actual_output = actual_output_stream.read()
-        self.assertEqual(actual_output, expected_output)
-
-    def test_delete_nonexistent_column(self):
-        csv_content = io.StringIO("name,age,height\nAlice,20,160\nBob,25,175\n")
-        expected_output = "name,age,height\nAlice,20,160\nBob,25,175\n"
-        actual_output_stream = delete_column(csv_content, "weight")
         actual_output = actual_output_stream.read()
         self.assertEqual(actual_output, expected_output)
 

@@ -15,6 +15,12 @@ import csv
 import xml.etree.ElementTree as ET
 import sys
 import io
+import os
+
+if __name__ == '__main__':
+    from utils import delete_column
+else:
+    from drawio_xl.utils import delete_column
 
 
 def convert_to_csv(input_stream, frontmatter_file):
@@ -175,38 +181,6 @@ def strip_front_matter(input_stream):
     for line in input_stream:
         if not line.strip().startswith('#'):
             output_stream.write(line)
-    output_stream.seek(0)
-    return output_stream
-
-def delete_column(input_stream, column_name):
-    """
-    Remove a column from the CSV content.
-
-    Args:
-    input_stream (io.StringIO): The input stream from which to read the CSV content.
-    column_name (str): The name of the column to remove.
-
-    Returns:
-    io.StringIO: The CSV content without the specified column.
-    """
-    reader = csv.reader(input_stream)
-    output_stream = io.StringIO()
-    writer = csv.writer(output_stream, lineterminator='\n')
-
-    headers = next(reader)
-    if column_name in headers:
-        column_index = headers.index(column_name)
-        headers.remove(column_name)
-
-        writer.writerow(headers)
-
-        for row in reader:
-            del row[column_index]
-            writer.writerow(row)
-    else:
-        input_stream.seek(0)
-        return input_stream
-
     output_stream.seek(0)
     return output_stream
 
@@ -524,7 +498,10 @@ def drawio_to_xl(input_stream):
     Returns:
     io.StringIO: The output stream containing the processed Excel data.
     """
-    output_stream = convert_to_csv(input_stream, 'frontmatter.txt')
+    script_dir = os.path.dirname(os.path.realpath(__file__)) # Get the directory of this script
+    frontmatter_path = os.path.join(script_dir, 'frontmatter.txt') # Construct the path to the frontmatter file
+    output_stream = convert_to_csv(input_stream, frontmatter_path) # Call the convert_to_csv function
+    #output_stream = convert_to_csv(input_stream, 'frontmatter.txt')
     output_stream = strip_front_matter(output_stream)
     output_stream = delete_height_width(output_stream)
     output_stream = replace_ids_with_xl_ids(output_stream)
