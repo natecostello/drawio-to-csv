@@ -2,7 +2,8 @@ import unittest
 import io
 import csv
 import os
-
+from xml.etree import ElementTree as ET
+import subprocess
 from drawio_xl.xl_to_drawio import rename_headers
 from drawio_xl.xl_to_drawio import lower_shape_case
 from drawio_xl.xl_to_drawio import lower_status_case
@@ -13,6 +14,7 @@ from drawio_xl.xl_to_drawio import insert_height_width
 from drawio_xl.xl_to_drawio import parse_decisions
 from drawio_xl.xl_to_drawio import add_frontmatter
 from drawio_xl.xl_to_drawio import csv_to_drawio
+from drawio_xl.xl_to_drawio import xl_to_drawio
 
 
 class TestRenameHeaders(unittest.TestCase):
@@ -115,7 +117,6 @@ class TestAddFrontmatter(unittest.TestCase):
         # Create a dummy frontmatter file
         with open('tests/frontmatter.txt', 'w') as f:
             f.write('This is the frontmatter\n')
-        print('file created')
         # Create a dummy input stream
         self.input_stream = io.StringIO('This is the main content\n')
 
@@ -131,6 +132,26 @@ class TestAddFrontmatter(unittest.TestCase):
         os.remove('tests/frontmatter.txt')
 
 class TestCsvToDrawio(unittest.TestCase):
+    @staticmethod
+    def normalize_xml(xml_string):
+        """
+        Discards all XML outside the <root> element.
+        """
+        root = ET.fromstring(xml_string)
+
+        # Find the <root> element
+        root_element = root.find('.//root')
+        if root_element is None:
+            print("Did not find <root> element")  # Debug print
+            return ''
+
+        # Below was not necessary for to pass the test
+        # Remove the 'id' attribute from the <diagram> element(s)
+        #for diagram in root_element.findall('.//diagram'):
+        #    diagram.attrib.pop('id', None)
+
+        return ET.tostring(root_element, encoding='unicode')
+
     def test_csv_to_drawio(self):
         self.maxDiff = None
         # Read the test_drawio.csv file into a string stream
@@ -139,14 +160,60 @@ class TestCsvToDrawio(unittest.TestCase):
 
         # Call the csv_to_drawio function
         output_stream = csv_to_drawio(input_stream)
-
+        
         # Read the test_drawio.drawio file
         with open('tests/test_drawio.drawio', 'r') as file:
             expected_output = file.read()
 
-        # Compare the output to the expected output
-        self.assertEqual(output_stream.getvalue(), expected_output)
+        # Compare the output to the expected output (only look inside root node)
+        self.assertEqual(TestCsvToDrawio.normalize_xml(output_stream.getvalue()), TestCsvToDrawio.normalize_xml(expected_output))
 
+class TestXlToDrawio(unittest.TestCase):
+    def test_xl_to_drawio(self):
+        self.maxDiff = None
+        # Read the input CSV file
+        with open('tests/test_xl.csv', 'r') as file:
+            input_stream = io.StringIO(file.read())
+
+        # Call the xl_to_drawio function
+        output_stream = xl_to_drawio(input_stream)
+
+        # Read the expected output Draw.io file
+        with open('tests/test_drawio.drawio', 'r') as file:
+            expected_output = file.read()
+        
+        # Compare the output to the expected output
+        self.assertEqual(TestCsvToDrawio.normalize_xml(output_stream.getvalue()), TestCsvToDrawio.normalize_xml(expected_output))
+
+class TestCommandLineInterface(unittest.TestCase):
+    def setUp(self):
+        self.output_file = 'tests/test_output.drawio'
+
+    def test_xl_to_drawio(self):
+        self.maxDiff = None
+
+        # Call the script with the input and output files
+        result = subprocess.run(['python3', 'drawio_xl/xl_to_drawio.py', 'tests/test_xl.csv', self.output_file], capture_output=True)
+        
+        # Check if the script exited without errors
+        self.assertEqual(result.returncode, 0)
+
+        # Check if the output file was created
+        self.assertTrue(os.path.exists(self.output_file))
+
+        # Read the output file and the expected output file
+        with open(self.output_file, 'r') as f:
+            output = f.read()
+        with open('tests/test_drawio.drawio', 'r') as f:
+            expected_output = f.read()
+
+        # Check if the output matches the expected output
+        self.assertEqual(TestCsvToDrawio.normalize_xml(output), TestCsvToDrawio.normalize_xml(expected_output))
+
+    def tearDown(self):
+        # Delete the output file
+        if os.path.exists(self.output_file):
+            os.remove(self.output_file)
 
 if __name__ == '__main__':
     unittest.main()

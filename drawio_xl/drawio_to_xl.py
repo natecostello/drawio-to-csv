@@ -153,6 +153,7 @@ def convert_to_csv(input_stream, frontmatter_file):
 
     # Write the final CSV with hardcoded front matter
     output = io.StringIO()
+    #TODO migrate frontmatter to utils
     output.write(front_matter)
     # Sort the fieldnames for consistency in the output for testing
     fieldnames = sorted(list(fieldnames))
@@ -204,7 +205,7 @@ def delete_height_width(input_stream):
 
 def replace_ids_with_xl_ids(input_stream):
     """
-    Replace the 'id' column values with the 'xl_id' column values in the CSV content.
+    Replace the 'id' column values with the 'xl_id' column values in the CSV content.  If the 'xl_id' column is empty in ANY row, the 'id' column values are retained.
 
     This function reads the CSV content from the given input stream,
     replaces the 'id' column values with the 'xl_id' column values, and returns the modified
@@ -214,7 +215,7 @@ def replace_ids_with_xl_ids(input_stream):
     input_stream (io.StringIO): The input stream containing the CSV content.
 
     Returns:
-    io.StringIO: The CSV content with the 'id' column renamed to 'xl_id'.
+    io.StringIO: The CSV content with the 'id' column renamed to 'xl_id' and 'id' column values with 'xl_id' column values.
     """
     reader = csv.reader(input_stream)
     output_stream = io.StringIO()
@@ -231,12 +232,23 @@ def replace_ids_with_xl_ids(input_stream):
     # Create a list to store the rows
     rows = []
 
-    # Iterate over the rows in the original CSV file
+    # Iterate over the rows in the original CSV file if ANY xl_id is empty, set xl_id_empty = true
+    xl_id_empty = False
     for row in reader:
-        # Add the mapping from "id" to "xl_id"
-        id_to_xl_id[row[id_index]] = row[xl_id_index]
-        # Add the row to the list of rows
+        if not row[xl_id_index]:
+            xl_id_empty = True
         rows.append(row)
+    
+    # If any xl_id is empty, keep the original id for all rows
+    # otherwise, replace the id with the corresponding xl_id
+    if xl_id_empty:
+        for row in rows:
+            id_to_xl_id[row[id_index]] = row[id_index]
+            #row[id_index] = row[id_index]
+    else:
+        for row in rows:
+            id_to_xl_id[row[id_index]] = row[xl_id_index]
+            #row[id_index] = row[xl_id_index]
 
     # Create a CSV writer
     writer = csv.writer(output_stream, lineterminator='\n')
@@ -498,72 +510,76 @@ def drawio_to_xl(input_stream):
     Returns:
     io.StringIO: The output stream containing the processed Excel data.
     """
+    # script_dir = os.path.dirname(os.path.realpath(__file__)) # Get the directory of this script
+    # frontmatter_path = os.path.join(script_dir, 'frontmatter.txt') # Construct the path to the frontmatter file
+    # output_stream = convert_to_csv(input_stream, frontmatter_path) # Call the convert_to_csv function
+    # #output_stream = convert_to_csv(input_stream, 'frontmatter.txt')
+    # output_stream = strip_front_matter(output_stream)
+    # output_stream = delete_height_width(output_stream)
+    # output_stream = replace_ids_with_xl_ids(output_stream)
+    # output_stream = delete_xl_ids(output_stream)
+    # output_stream = rename_shapes(output_stream)
+    # output_stream = parse_decisions(output_stream)
+    # output_stream = insert_newlines(output_stream)
+    # output_stream = rename_headers(output_stream)
+    # output_stream = reorder_headers(output_stream)
+    # return output_stream
+
+    
     script_dir = os.path.dirname(os.path.realpath(__file__)) # Get the directory of this script
     frontmatter_path = os.path.join(script_dir, 'frontmatter.txt') # Construct the path to the frontmatter file
     output_stream = convert_to_csv(input_stream, frontmatter_path) # Call the convert_to_csv function
-    #output_stream = convert_to_csv(input_stream, 'frontmatter.txt')
-    output_stream = strip_front_matter(output_stream)
-    output_stream = delete_height_width(output_stream)
-    output_stream = replace_ids_with_xl_ids(output_stream)
-    output_stream = delete_xl_ids(output_stream)
-    output_stream = rename_shapes(output_stream)
-    output_stream = parse_decisions(output_stream)
-    output_stream = insert_newlines(output_stream)
-    output_stream = rename_headers(output_stream)
-    output_stream = reorder_headers(output_stream)
-    return output_stream
-
     # output_stream = convert_to_csv(input_stream, 'frontmatter.txt')
-    # with open('tests/debug_output/0_convert_to_csv.csv', 'w') as f:
-    #     f.write(output_stream.getvalue())
-    # output_stream.seek(0)
+    with open('tests/debug_output/0_convert_to_csv.csv', 'w') as f:
+        f.write(output_stream.getvalue())
+    output_stream.seek(0)
 
-    # output_stream = strip_front_matter(output_stream)
-    # with open('tests/debug_output/1_strip_front_matter.csv', 'w') as f:
-    #     f.write(output_stream.getvalue())
-    # output_stream.seek(0)
+    output_stream = strip_front_matter(output_stream)
+    with open('tests/debug_output/1_strip_front_matter.csv', 'w') as f:
+        f.write(output_stream.getvalue())
+    output_stream.seek(0)
 
-    # output_stream = delete_height_width(output_stream)
-    # with open('tests/debug_output/2_delete_height_width.csv', 'w') as f:
-    #     f.write(output_stream.getvalue())
-    # output_stream.seek(0)
+    output_stream = delete_height_width(output_stream)
+    with open('tests/debug_output/2_delete_height_width.csv', 'w') as f:
+        f.write(output_stream.getvalue())
+    output_stream.seek(0)
 
-    # output_stream = replace_ids_with_xl_ids(output_stream)
-    # with open('tests/debug_output/3_replace_ids_with_xl_ids.csv', 'w') as f:
-    #     f.write(output_stream.getvalue())
-    # output_stream.seek(0)
+    output_stream = replace_ids_with_xl_ids(output_stream)
+    with open('tests/debug_output/3_replace_ids_with_xl_ids.csv', 'w') as f:
+        f.write(output_stream.getvalue())
+    output_stream.seek(0)
 
-    # output_stream = delete_xl_ids(output_stream)
-    # with open('tests/debug_output/4_delete_xl_ids.csv', 'w') as f:
-    #     f.write(output_stream.getvalue())
-    # output_stream.seek(0)
+    output_stream = delete_xl_ids(output_stream)
+    with open('tests/debug_output/4_delete_xl_ids.csv', 'w') as f:
+        f.write(output_stream.getvalue())
+    output_stream.seek(0)
 
-    # output_stream = rename_shapes(output_stream)
-    # with open('tests/debug_output/5_rename_shapes.csv', 'w') as f:
-    #     f.write(output_stream.getvalue())
-    # output_stream.seek(0)
+    output_stream = rename_shapes(output_stream)
+    with open('tests/debug_output/5_rename_shapes.csv', 'w') as f:
+        f.write(output_stream.getvalue())
+    output_stream.seek(0)
 
-    # output_stream = parse_decisions(output_stream)
-    # with open('tests/debug_output/6_parse_decisions.csv', 'w') as f:
-    #     f.write(output_stream.getvalue())
-    # output_stream.seek(0)
+    output_stream = parse_decisions(output_stream)
+    with open('tests/debug_output/6_parse_decisions.csv', 'w') as f:
+        f.write(output_stream.getvalue())
+    output_stream.seek(0)
 
-    # output_stream = insert_newlines(output_stream)
-    # with open('tests/debug_output/7_insert_newlines.csv', 'w') as f:
-    #     f.write(output_stream.getvalue())
-    # output_stream.seek(0)
+    output_stream = insert_newlines(output_stream)
+    with open('tests/debug_output/7_insert_newlines.csv', 'w') as f:
+        f.write(output_stream.getvalue())
+    output_stream.seek(0)
 
-    # output_stream = rename_headers(output_stream)
-    # with open('tests/debug_output/8_rename_headers.csv', 'w') as f:
-    #     f.write(output_stream.getvalue())
-    # output_stream.seek(0)
+    output_stream = rename_headers(output_stream)
+    with open('tests/debug_output/8_rename_headers.csv', 'w') as f:
+        f.write(output_stream.getvalue())
+    output_stream.seek(0)
 
-    # output_stream = reorder_headers(output_stream)
-    # with open('tests/debug_output/9_reorder_headers.csv', 'w') as f:
-    #     f.write(output_stream.getvalue())
-    # output_stream.seek(0)
+    output_stream = reorder_headers(output_stream)
+    with open('tests/debug_output/9_reorder_headers.csv', 'w') as f:
+        f.write(output_stream.getvalue())
+    output_stream.seek(0)
 
-    # return output_stream
+    return output_stream
 
 def main():
     # Create the argument parser

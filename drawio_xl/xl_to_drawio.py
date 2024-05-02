@@ -2,6 +2,8 @@ import io
 import csv
 import subprocess
 import tempfile
+import os
+import argparse
 
 
 if __name__ == '__main__':
@@ -425,18 +427,147 @@ def csv_to_drawio(input_stream):
         subprocess.CalledProcessError: If the Draw.io command fails.
     """
     # Create temporary files for the input and output
-    with tempfile.NamedTemporaryFile(delete=True, mode='w+') as temp_input, tempfile.NamedTemporaryFile(delete=True, mode='w+') as temp_output:
+    with tempfile.NamedTemporaryFile(suffix='.csv', delete=True, mode='w+') as temp_input, tempfile.NamedTemporaryFile(delete=True, mode='w+') as temp_output:
         # Write the contents of the input stream to the temporary input file
         temp_input.write(input_stream.read())
         temp_input.flush()  # Ensure all data is written to the file
-
-        # Construct the command to run Draw.io
+        
+        #TODO this path should come from a config file
         drawio_path = "/Applications/draw.io.app/Contents/MacOS/draw.io"
         command = [drawio_path, "-x", temp_input.name, "-f", "xml", "-o", temp_output.name]
-
+        
         # Run the command
         subprocess.run(command, check=True)
 
-        # Read the output file into a string stream and return it
         temp_output.seek(0)
-        return io.StringIO(temp_output.read())
+        return io.StringIO(temp_output.read())    
+
+def xl_to_drawio(input_stream):
+    """
+    This function processes an Excel CSV file and converts it to a draw.io (XML) .drawio file.
+
+    The function performs the following steps:
+    1. Removed as it is not needed: Deletes non-utf8 characters.
+    2. Deletes empty columns.
+    3. Deletes empty rows.
+    4. Renames headers.
+    5. Lowers the case of the 'shape' and 'status' columns.
+    6. Replaces newline characters with '<br>'.
+    7. Saves the 'id' column to a new 'xl_id' column.
+    8. Renames shapes from Visio standard flowchart shapes to draw.io flowchart shapes.
+    9. Adds 'width' and 'height' columns based on the 'shape' column.
+    10. Parses decision data from Visio standard format to a format suitable for draw.io.
+    11. Adds frontmatter to the CSV data.
+    12. Converts the CSV data to a draw.io diagram using the draw.io command-line tool.
+
+    Parameters:
+    input_stream (io.StringIO): The input stream containing the Excel CSV data.
+
+    Returns:
+    io.StringIO: The output stream containing the processed draw.io data.
+    """
+    # Delete non-utf8 characters
+    #input_stream = delete_non_utf8(input_stream)
+    
+    # input_stream = delete_empty_cols(input_stream)
+    # input_stream = delete_empty_rows(input_stream)
+    # input_stream = rename_headers(input_stream)
+    # input_stream = lower_shape_case(input_stream)
+    # input_stream = lower_status_case(input_stream)
+    # input_stream = replace_newlines(input_stream)
+    # input_stream = save_id(input_stream)
+    # input_stream = rename_shapes(input_stream)
+    # input_stream = insert_height_width(input_stream)
+    # input_stream = parse_decisions(input_stream)
+    # script_dir = os.path.dirname(os.path.realpath(__file__)) # Get the directory of this script
+    # frontmatter_path = os.path.join(script_dir, 'frontmatter.txt') # Construct the path to the frontmatter file
+    # input_stream = add_frontmatter(input_stream, frontmatter_path)
+    # output_stream = csv_to_drawio(input_stream)
+    
+    input_stream = delete_empty_cols(input_stream)
+    with open('tests/debug_output/0_delete_empty_cols.csv', 'w') as f:
+        f.write(input_stream.getvalue())
+    input_stream.seek(0)
+
+    input_stream = delete_empty_rows(input_stream)
+    with open('tests/debug_output/1_delete_empty_rows.csv', 'w') as f:
+        f.write(input_stream.getvalue())
+    input_stream.seek(0)
+
+    input_stream = rename_headers(input_stream)
+    with open('tests/debug_output/2_rename_headers.csv', 'w') as f:
+        f.write(input_stream.getvalue())
+    input_stream.seek(0)
+
+    input_stream = lower_shape_case(input_stream)
+    with open('tests/debug_output/3_lower_shape_case.csv', 'w') as f:
+        f.write(input_stream.getvalue())
+    input_stream.seek(0)
+
+    input_stream = lower_status_case(input_stream)
+    with open('tests/debug_output/4_lower_status_case.csv', 'w') as f:
+        f.write(input_stream.getvalue())
+    input_stream.seek(0)
+
+    input_stream = replace_newlines(input_stream)
+    with open('tests/debug_output/5_replace_newlines.csv', 'w') as f:
+        f.write(input_stream.getvalue())
+    input_stream.seek(0)
+
+    input_stream = save_id(input_stream)
+    with open('tests/debug_output/6_save_id.csv', 'w') as f:
+        f.write(input_stream.getvalue())
+    input_stream.seek(0)
+
+    input_stream = rename_shapes(input_stream)
+    with open('tests/debug_output/7_rename_shapes.csv', 'w') as f:
+        f.write(input_stream.getvalue())
+    input_stream.seek(0)
+
+    input_stream = insert_height_width(input_stream)
+    with open('tests/debug_output/8_insert_height_width.csv', 'w') as f:
+        f.write(input_stream.getvalue())
+    input_stream.seek(0)
+
+    input_stream = parse_decisions(input_stream)
+    with open('tests/debug_output/9_parse_decisions.csv', 'w') as f:
+        f.write(input_stream.getvalue())
+    input_stream.seek(0)
+
+    script_dir = os.path.dirname(os.path.realpath(__file__)) # Get the directory of this script
+    frontmatter_path = os.path.join(script_dir, 'frontmatter.txt') # Construct the path to the frontmatter file
+    input_stream = add_frontmatter(input_stream, frontmatter_path)
+    with open('tests/debug_output/10_add_frontmatter.csv', 'w') as f:
+        f.write(input_stream.getvalue())
+    input_stream.seek(0)
+
+    output_stream = csv_to_drawio(input_stream)
+    with open('tests/debug_output/11_csv_to_drawio.drawio', 'w') as f:
+        f.write(output_stream.getvalue())
+    output_stream.seek(0)
+
+    return output_stream
+
+def main():
+    # Create the argument parser
+    parser = argparse.ArgumentParser(description='Convert an Excel CSV file to a drawio.')
+    parser.add_argument('input_file', help='The input CSV file.')
+    parser.add_argument('output_file', help='The output drawio file.')
+
+    # Parse the command-line arguments
+    args = parser.parse_args()
+
+    # Read the input file
+    with open(args.input_file, 'r') as f:
+        input_data = f.read()
+    input_stream = io.StringIO(input_data)
+
+    # Call the drawio_to_xl function
+    output_stream = xl_to_drawio(input_stream)
+
+    # Write the output to the output file
+    with open(args.output_file, 'w') as f:
+        f.write(output_stream.getvalue())
+
+if __name__ == '__main__':
+    main()

@@ -1,3 +1,4 @@
+##
 ## **********************************************************
 ## Example description
 ## **********************************************************
@@ -5,7 +6,7 @@
 ## **********************************************************
 ## Configuration
 ## **********************************************************
-# label: %description%<br><b>%xl_id%</b> - <i>%owner%</i>
+# label: %description%<br><b>%xl_id%</b> - <i>%owner%</i><br>%estimated_completion_date%
 ##
 ##
 # styles: { \
@@ -17,17 +18,17 @@
 # "" : "whiteSpace=wrap;shape=mxgraph.flowchart.%shape%;html=1;" }
 # stylename: status
 # namespace: csvimport-
-# connect: {"from": "next_step_id", "to": "id"}
-# connect: {"from": "decision0_id", "to": "id", "fromlabel": "decision0_label"}
-# connect: {"from": "decision1_id", "to": "id", "fromlabel": "decision1_label"}
-# connect: {"from": "decision2_id", "to": "id", "fromlabel": "decision2_label"}
+# connect: {"from": "next_step_id", "to": "id", "style": "endArrow=blockThin;endFill=1;fontSize=11;edgeStyle=orthogonalEdgeStyle;"}
+# connect: {"from": "decision0_id", "to": "id", "fromlabel": "decision0_label", "style": "endArrow=blockThin;endFill=1;fontSize=11;edgeStyle=orthogonalEdgeStyle;"}
+# connect: {"from": "decision1_id", "to": "id", "fromlabel": "decision1_label", "style": "endArrow=blockThin;endFill=1;fontSize=11;edgeStyle=orthogonalEdgeStyle;"}
+# connect: {"from": "decision2_id", "to": "id", "fromlabel": "decision2_label", "style": "endArrow=blockThin;endFill=1;fontSize=11;edgeStyle=orthogonalEdgeStyle;"}
 # width: @width
 # height: @height
 # padding: 5
 # ignore: id, next_step_id, shape, width, height, decision0_id, decision0_label, decision1_id, decision1_label, decision2_id, decision2_label
 # link: url
-# nodespacing: 60
-# levelspacing: 60
+# nodespacing: 100
+# levelspacing: 200
 # edgespacing: 40
 # layout: horizontalflow
 ## **********************************************************
@@ -40,16 +41,16 @@
 ## decision0_id, decision1_id, decision2_id are the ids of the next steps following a decision
 ## decision0_label, decision1_label, decision2_label are the labels for the decisions
 ## width and height are the dimensions of the shape
-##
+## xl_id is the original process step id from excel
 ## **********************************************************
-decision0_id,decision0_label,decision1_id,decision1_label,decision2_id,decision2_label,description,estimated_completion_date,estimated_duration,function,height,id,next_step_id,notes,oqe,owner,phase,shape,status,wbs,width,xl_id
-,,,,,,This is a long task description like we would expect,,,,100,2,"3,4,5,9",,,nate,,process,todo,,200,
-4,Yes,6,No,,,Cell B,,,mechanical,100,3,,,,alan,detail design,decision,done,,100,
-6,Pass,5,Fail,,,Cell C,,,,100,4,,,,,,decision,doing,,100,
-,,,,,,Cell D - I would like to see what a long description on a predefined process looks like,,,,100,5,7,,,alan,,predefined_process,waiting,,200,
-,,,,,,Cell E,,,,100,6,7,,,,,data,stop,,200,
-,,,,,,,,,,100,7,8,,,,,summing_function,waiting,,100,
-,,,,,,Done,,,,50,8,,,,,,terminator,,,100,
-,,,,,,Repo,,,,100,9,10,,,,,document,,,200,
-,,,,,,,,,,100,10,7,,,,,or,,,100,
-,,,,,,start,,,,100,11,10,,,,,start_1,,,100,
+id,owner,description,status,function,phase,estimated_duration,estimated_completion_date,notes,wbs,oqe,next_step_id,shape,xl_id,width,height,decision0_id,decision0_label,decision1_id,decision1_label,decision2_id,decision2_label
+2,nate,This is a long task description like we would expect,todo,,,,,,,,"3,4,5,9",process,2,200,100,,,,,,
+3,alan,Cell B,done,mechanical,detail design,,,,,,,decision,3,100,100,4,Yes,6,No,,
+4,,Cell C,doing,,,,,,,,,decision,4,100,100,6,Pass,5,Fail,,
+5,alan,Cell D - I would like to see what a long description on a predefined process looks like,waiting,,,,,,,,7,predefined_process,5,200,100,,,,,,
+6,,Cell E,stop,,,,,,,,7,data,6,200,100,,,,,,
+7,,,waiting,,,,,,,,8,summing_function,7,100,100,,,,,,
+8,,Done,,,,,,,,,,terminator,8,100,50,,,,,,
+9,,Repo,,,,,,,,,10,document,9,200,100,,,,,,
+10,,,,,,,,,,,7,or,10,100,100,,,,,,
+11,,start,,,,,,,,,10,start_1,11,100,100,,,,,,

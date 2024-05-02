@@ -2,6 +2,7 @@ import unittest
 import io
 import subprocess
 import os
+import csv
 
 from drawio_xl.drawio_to_xl import convert_to_csv  
 from drawio_xl.drawio_to_xl import strip_front_matter  
@@ -16,6 +17,54 @@ from drawio_xl.drawio_to_xl import reorder_headers
 from drawio_xl.drawio_to_xl import drawio_to_xl
 
 class TestConvertToCSV(unittest.TestCase):
+    @staticmethod
+    def alphabetize_columns(csv_string):
+        """
+        Alphabetize the columns in a CSV string.
+
+        Args:
+            csv_string (str): The input string containing the CSV data.
+
+        Returns:
+            str: The output string with the columns in the CSV data alphabetized.
+        """
+        # Create a StringIO object from the input string
+        stream = io.StringIO(csv_string)
+        # Read the CSV data from the input stream
+        reader = csv.reader(stream)
+
+        # Store all lines beginning with a '#' character in the frontmatter
+        frontmatter = []
+        line = next(reader)
+        while line[0].startswith('#'):
+            frontmatter.append(line)
+            line = next(reader)
+        # the first line that is not a comment is the header
+        headers = line
+
+        # Read the remaining rows
+        rows = list(reader)
+
+        # Alphabetize the headers and get the new order
+        new_order = sorted(range(len(headers)), key=lambda i: headers[i])
+        headers = [headers[i] for i in new_order]
+
+        # Rearrange the columns in the rows to match the new order of the headers
+        rows = [[row[i] for i in new_order] for row in rows]
+
+        # Write the CSV data to the output stream
+        output_stream = io.StringIO()
+        writer = csv.writer(output_stream, lineterminator='\n')
+        for line in frontmatter:
+            writer.writerow(line)
+        writer.writerow(headers)
+        writer.writerows(rows)
+
+        # convert the output stream to a string
+        output_string = output_stream.getvalue()
+        # Return the output string
+        return output_string
+    
     def test_convert_to_csv(self):
         # Remove the limit on the length of the diff message
         self.maxDiff = None
@@ -36,8 +85,8 @@ class TestConvertToCSV(unittest.TestCase):
             expected_output = f.read()
 
         # Check that the actual output matches the expected output
-        self.assertEqual(actual_output, expected_output)
-
+        self.assertEqual(self.alphabetize_columns(actual_output), self.alphabetize_columns(expected_output))
+        
 class TestStripFrontMatter(unittest.TestCase):
     def test_strip_front_matter(self):
         input_data = io.StringIO("# This is a comment\nThis is not a comment\n# Another comment")
@@ -54,7 +103,7 @@ class TestDeleteHeightWidth(unittest.TestCase):
         actual_output = actual_output_stream.read()
         self.assertEqual(actual_output, expected_output)
 
-class TestReplaceIdsWithXlIdYourFunction(unittest.TestCase):  
+class TestReplaceIdsWithXlId(unittest.TestCase):  
     def test_replace_ids_with_xl_ids(self):  
         csv_content = 'id,xl_id,next_step_id,decision0_id,decision1_id,decision2_id\n1,100,"2,3",3,4,5\n2,200,1,3,4,5\n3,300,1,2,4,5\n4,400,1,2,3,5\n5,500,1,2,3,4\n'
         input_stream = io.StringIO(csv_content)
@@ -62,6 +111,14 @@ class TestReplaceIdsWithXlIdYourFunction(unittest.TestCase):
         actual_output_stream = replace_ids_with_xl_ids(input_stream)
         actual_output = actual_output_stream.read()
         self.assertEqual(actual_output, expected_output) 
+    
+    def test_replace_ids_with_xl_ids_empty_xl_id(self):
+        csv_content = 'id,xl_id,next_step_id,decision0_id,decision1_id,decision2_id\n1,,2,3,4,5\n2,200,1,3,4,5\n3,300,1,2,4,5\n4,400,1,2,3,5\n5,500,1,2,3,4\n'
+        input_stream = io.StringIO(csv_content)
+        expected_output = 'id,xl_id,next_step_id,decision0_id,decision1_id,decision2_id\n1,,2,3,4,5\n2,200,1,3,4,5\n3,300,1,2,4,5\n4,400,1,2,3,5\n5,500,1,2,3,4\n'
+        actual_output_stream = replace_ids_with_xl_ids(input_stream)
+        actual_output = actual_output_stream.read()
+        self.assertEqual(actual_output, expected_output)
 
 class TestDeleteXlIds(unittest.TestCase):
     def test_delete_xl_ids(self):

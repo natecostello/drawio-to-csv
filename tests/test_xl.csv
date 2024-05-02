@@ -1,11 +1,11 @@
 Process Step ID,Owner,Description,Status,Function,Phase,Estimated Duration,Estimated Completion Date,Notes,Wbs,Oqe,Next Step ID,Shape Type,Connector Label
-,nate,This is a long task description like we would expect,todo,,,,,,,,",,,",process,
-,alan,Cell B,done,mechanical,detail design,,,,,,,decision,"Yes, No"
-,,Cell C,doing,,,,,,,,,decision,"Pass, Fail"
-,alan,Cell D - I would like to see what a long description on a predefined process looks like,waiting,,,,,,,,,predefined_process,
-,,Cell E,stop,,,,,,,,,data,
-,,OR,waiting,,,,,,,,,process,
-,,Done,,,,,,,,,,end,
-,,Repo,,,,,,,,,,document,
-,,AND,,,,,,,,,,process,
-,,start,,,,,,,,,,start,
+2,nate,This is a long task description like we would expect,todo,,,,,,,,"3,4,5,9",process,
+3,alan,Cell B,done,mechanical,detail design,,,,,,"4, 6",decision,"Yes, No"
+4,,Cell C,doing,,,,,,,,"6, 5",decision,"Pass, Fail"
+5,alan,Cell D - I would like to see what a long description on a predefined process looks like,waiting,,,,,,,,7,predefined_process,
+6,,Cell E,stop,,,,,,,,7,data,
+7,,OR,waiting,,,,,,,,8,process,
+8,,Done,,,,,,,,,,end,
+9,,Repo,,,,,,,,,10,document,
+10,,AND,,,,,,,,,7,process,
+11,,start,,,,,,,,,10,start,
