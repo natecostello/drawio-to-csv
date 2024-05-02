@@ -4,6 +4,8 @@ import csv
 import os
 from xml.etree import ElementTree as ET
 import subprocess
+from tests.testing_support_functions import normalize_xml
+
 from drawio_xl.xl_to_drawio import rename_headers
 from drawio_xl.xl_to_drawio import lower_shape_case
 from drawio_xl.xl_to_drawio import lower_status_case
@@ -152,26 +154,6 @@ class TestAddFrontmatter(unittest.TestCase):
         os.remove('tests/frontmatter.txt')
 
 class TestCsvToDrawio(unittest.TestCase):
-    @staticmethod
-    def normalize_xml(xml_string):
-        """
-        Discards all XML outside the <root> element.
-        """
-        root = ET.fromstring(xml_string)
-
-        # Find the <root> element
-        root_element = root.find('.//root')
-        if root_element is None:
-            print("Did not find <root> element")  # Debug print
-            return ''
-
-        # Below was not necessary for to pass the test
-        # Remove the 'id' attribute from the <diagram> element(s)
-        #for diagram in root_element.findall('.//diagram'):
-        #    diagram.attrib.pop('id', None)
-
-        return ET.tostring(root_element, encoding='unicode')
-
     def test_csv_to_drawio(self):
         self.maxDiff = None
         # Read the test_drawio.csv file into a string stream
@@ -186,7 +168,7 @@ class TestCsvToDrawio(unittest.TestCase):
             expected_output = file.read()
 
         # Compare the output to the expected output (only look inside root node)
-        self.assertEqual(TestCsvToDrawio.normalize_xml(output_stream.getvalue()), TestCsvToDrawio.normalize_xml(expected_output))
+        self.assertEqual(normalize_xml(output_stream.getvalue()), normalize_xml(expected_output))
 
 class TestXlToDrawio(unittest.TestCase):
     def test_xl_to_drawio(self):
@@ -203,7 +185,7 @@ class TestXlToDrawio(unittest.TestCase):
             expected_output = file.read()
         
         # Compare the output to the expected output
-        self.assertEqual(TestCsvToDrawio.normalize_xml(output_stream.getvalue()), TestCsvToDrawio.normalize_xml(expected_output))
+        self.assertEqual(normalize_xml(output_stream.getvalue()), normalize_xml(expected_output))
 
 class TestCommandLineInterface(unittest.TestCase):
     def setUp(self):
@@ -228,7 +210,7 @@ class TestCommandLineInterface(unittest.TestCase):
             expected_output = f.read()
 
         # Check if the output matches the expected output
-        self.assertEqual(TestCsvToDrawio.normalize_xml(output), TestCsvToDrawio.normalize_xml(expected_output))
+        self.assertEqual(normalize_xml(output), normalize_xml(expected_output))
 
     def tearDown(self):
         # Delete the output file
