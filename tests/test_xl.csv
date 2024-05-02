@@ -4,8 +4,8 @@ Process Step ID,Owner,Description,Status,Function,Phase,Estimated Duration,Estim
 4,,Cell C,doing,,,,,,,,"6, 5",decision,"Pass, Fail"
 5,alan,Cell D - I would like to see what a long description on a predefined process looks like,waiting,,,,,,,,7,predefined_process,
 6,,Cell E,stop,,,,,,,,7,data,
-7,,OR,waiting,,,,,,,,8,process,
+7,,,waiting,,,,,,,,8,custom 1,
 8,,Done,,,,,,,,,,end,
 9,,Repo,,,,,,,,,10,document,
-10,,AND,,,,,,,,,7,process,
+10,,,,,,,,,,,7,custom 2,
 11,,start,,,,,,,,,10,start,

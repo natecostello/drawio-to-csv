@@ -75,13 +75,33 @@ class TestSaveId(unittest.TestCase):
 class TestRenameShapes(unittest.TestCase):
     def test_rename_shapes(self):
         # Create a StringIO object with some CSV data
-        input_stream = io.StringIO("shape,description\nprocess,AND\nprocess,OR\nend,\nstart,")
+        input_stream = io.StringIO("shape\nstart\ncustom 1\ncustom 2\nend")
 
         # Call the function
         output_stream = rename_shapes(input_stream)
 
         # Check that the output is as expected
-        self.assertEqual(output_stream.getvalue(), "shape,description\nor,\nsumming_function,\nterminator,\nstart_1,\n")
+        self.assertEqual(output_stream.getvalue(), "shape\nstart_1\nsumming_function\nor\nterminator\n")
+        
+    def test_rename_shapes_no_renaming(self):
+        # Create a StringIO object with some CSV data
+        input_stream = io.StringIO("shape\nrectangle\ncircle")
+
+        # Call the function
+        output_stream = rename_shapes(input_stream)
+
+        # Check that the output is as expected
+        self.assertEqual(output_stream.getvalue(), "shape\nrectangle\ncircle\n")
+        
+    def test_rename_shapes_empty_input(self):
+        # Create a StringIO object with some CSV data
+        input_stream = io.StringIO("shape\n")
+
+        # Call the function
+        output_stream = rename_shapes(input_stream)
+
+        # Check that the output is as expected
+        self.assertEqual(output_stream.getvalue(), "shape\n")
 
 class TestInsertHeightWidth(unittest.TestCase):
     def test_insert_height_width(self):

@@ -223,17 +223,15 @@ def save_id(input_stream):
 
 def rename_shapes(input_stream):
     """
-    Renames certain 'shape' values in the input CSV stream based on their 'description' values.
+    Renames certain 'shape' values in the input CSV to maintain correspondence with between Visio and draw.io.
 
-    This function reads a CSV from the input stream, finds the 'shape' and 'description' columns, 
-    and renames certain 'shape' values based on their corresponding 'description' values. 
     The modified CSV is written to a new output stream, which is then returned.
 
-    Specifically, if a row's 'shape' is "process" and its 'description' is "AND", the 'shape' is 
-    renamed to "or" and the 'description' is cleared. If a row's 'shape' is "process" and its 
-    'description' is "OR", the 'shape' is renamed to "summing_function" and the 'description' is cleared. 
-    If a row's 'shape' is "end", the 'shape' is renamed to "terminator". If a row's 'shape' is "start", 
-    the 'shape' is renamed to "start_1".
+    The mapping of 'shape' values from Visio to draw.io is as follows:
+    - 'custom 1' is renamed to 'summing_junction'.
+    - 'custom 2' is renamed to 'or'.
+    - 'end' is renamed to 'terminator'.
+    - 'start' is renamed to 'start_1'.
 
     Args:
         input_stream (io.StringIO): The input stream containing the CSV data.
@@ -241,26 +239,20 @@ def rename_shapes(input_stream):
     Returns:
         io.StringIO: The output stream with the renamed 'shape' values.
     """
-    #TODO consider a dedicated column to handle AND and OR
-    #TODO changes would need to be propagated to the drawio_to_xl side
-
     output_stream = io.StringIO()
     reader = csv.reader(input_stream)
     writer = csv.writer(output_stream, lineterminator='\n')
 
     headers = next(reader)
     shape_index = headers.index('shape')
-    description_index = headers.index('description')
-
+    
     writer.writerow(headers)
 
     for row in reader:
-        if row[shape_index] == "process" and row[description_index] == "AND":
+        if row[shape_index] == "custom 2":
             row[shape_index] = "or"
-            row[description_index] = ""
-        elif row[shape_index] == "process" and row[description_index] == "OR":
+        elif row[shape_index] == "custom 1":
             row[shape_index] = "summing_function"
-            row[description_index] = ""
         elif row[shape_index] == "end":
             row[shape_index] = "terminator"
         elif row[shape_index] == "start":

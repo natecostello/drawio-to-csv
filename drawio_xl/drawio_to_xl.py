@@ -293,11 +293,11 @@ def delete_xl_ids(input_stream):
 
 def rename_shapes(input_stream):
     """
-    Rename shapes in the CSV content.
+    Rename shapes in the CSV content to maintain correspondence between Drawio and Visio shapes.
 
     This function reads the CSV content from the given input stream,
     renames shapes based on predefined mappings, and returns the modified
-    CSV content as a new stream.
+    CSV content as a new stream.  
 
     Args:
     input_stream (io.StringIO): The input stream containing the CSV content.
@@ -308,27 +308,18 @@ def rename_shapes(input_stream):
     reader = csv.DictReader(input_stream)
     output_stream = io.StringIO()
     writer = csv.DictWriter(output_stream, fieldnames=reader.fieldnames, lineterminator='\n')
-    #TODO this function depends on a non-required column 'description' which is not present in the input file
-    #TODO consider if there is a better way to do this
     
-    # Check if 'description' column is present in the input file and  create it if not
-    if 'description' not in reader.fieldnames:
-        reader.fieldnames.append('description')
-        writer.writeheader()
-    else:
-        writer.writeheader()
+    writer.writeheader()
 
     for row in reader:
         if row['shape'] == 'start_1':
             row['shape'] = 'start'
         elif row['shape'] == 'terminator':
             row['shape'] = 'end'
-        elif row['shape'] == 'summing_function':
-            row['shape'] = 'process'
-            row['description'] = 'OR'
-        elif row['shape'] == 'or':
-            row['shape'] = 'process'
-            row['description'] = 'AND'
+        elif row['shape'] == 'summing_function': #this is an OR
+            row['shape'] = 'custom 1' #maintains compatibility with visio
+        elif row['shape'] == 'or': #this is an AND
+            row['shape'] = 'custom 2' #maintains compatibility with visio
         writer.writerow(row)
 
     output_stream.seek(0)

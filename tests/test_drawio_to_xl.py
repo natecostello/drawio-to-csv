@@ -131,13 +131,26 @@ class TestDeleteXlIds(unittest.TestCase):
 
 class TestRenameShapes(unittest.TestCase):
     def test_rename_shapes(self):
-        self.maxDiff = None
-        csv_content = 'id,shape,next_step_id,decision0_id,decision1_id,decision2_id\n100,start_1,"200,300",300,400,500\n200,terminator,100,300,400,500\n300,summing_function,100,200,400,500\n400,or,100,200,300,500\n500,Ellipse,100,200,300,400\n'
-        input_stream = io.StringIO(csv_content)
-        expected_output = 'id,shape,next_step_id,decision0_id,decision1_id,decision2_id,description\n100,start,"200,300",300,400,500,\n200,end,100,300,400,500,\n300,process,100,200,400,500,OR\n400,process,100,200,300,500,AND\n500,Ellipse,100,200,300,400,\n'
+        input_data = """id,shape,next_step_id,decision0_id,decision1_id,decision2_id
+100,start_1,"200,300",300,400,500
+200,terminator,100,300,400,500
+300,summing_function,100,200,400,500
+400,or,100,200,300,500
+500,Ellipse,100,200,300,400
+"""
+        expected_output = """id,shape,next_step_id,decision0_id,decision1_id,decision2_id
+100,start,"200,300",300,400,500
+200,end,100,300,400,500
+300,custom 1,100,200,400,500
+400,custom 2,100,200,300,500
+500,Ellipse,100,200,300,400
+"""
+        input_stream = io.StringIO(input_data)
+        expected_output_stream = io.StringIO(expected_output)
+
         actual_output_stream = rename_shapes(input_stream)
-        actual_output = actual_output_stream.read()
-        self.assertEqual(actual_output, expected_output)
+
+        self.assertEqual(actual_output_stream.getvalue(), expected_output_stream.getvalue())
 
 class TestParseDecisions(unittest.TestCase):
     def test_parse_decisions(self):
@@ -206,6 +219,7 @@ desc2,owner2,2,note2,status2
 
 class TestDrawioToXl(unittest.TestCase):
     def test_drawio_to_xl(self):
+        self.maxDiff = None
         # Read the input file
         with open('tests/test_drawio.drawio', 'r') as f:
             input_data = f.read()
@@ -228,6 +242,7 @@ class TestCommandLineInterface(unittest.TestCase):
         self.output_file = 'tests/test_output.csv'
 
     def test_drawio_to_xl(self):
+        self.maxDiff = None
         # Call the script with the input and output files
         result = subprocess.run(['python3', 'drawio_xl/drawio_to_xl.py', 'tests/test_drawio.drawio', self.output_file], capture_output=True)
 
