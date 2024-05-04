@@ -11,12 +11,20 @@ if __name__ == '__main__':
     from utils import delete_non_utf8
     from utils import delete_empty_cols
     from utils import delete_empty_rows
+    from utils import get_max_decision_count
+    from utils import get_connect_frontmatter
+    from utils import get_ignore_frontmatter
+    import config
 
 else:
     from drawio_xl.utils import delete_column
     from drawio_xl.utils import delete_non_utf8
     from drawio_xl.utils import delete_empty_cols
     from drawio_xl.utils import delete_empty_rows
+    from drawio_xl.utils import get_max_decision_count
+    from drawio_xl.utils import get_connect_frontmatter
+    from drawio_xl.utils import get_ignore_frontmatter
+    from drawio_xl import config
 
 
 
@@ -368,34 +376,45 @@ def parse_decisions(input_stream):
     
     return output_stream
 
-def add_frontmatter(input_stream, frontmatter_file):
+def add_frontmatter(input_stream):
     """
-    This function takes an input stream and a file path to a frontmatter file. 
-    It reads the frontmatter file and writes its content to a new output stream. 
-    Then it reads the input stream and writes its content to the output stream. 
-    The output stream is returned, with the pointer set back to the start of the stream.
+    This function takes an input stream, extracts the max_decision_count from the stream data using 
+    get_max_decision_count from utils, assembles a frontmatter string composed of static frontmatter 
+    from config.py, connector frontmatter from utils, and ignore frontmatter from utils. 
+    It returns a stream that consists of the input stream with the frontmatter string prepended to it.
 
     Parameters:
     input_stream (io.StringIO): The input stream to read from.
-    frontmatter_file (str): The path to the frontmatter file.
 
     Returns:
     output_stream (io.StringIO): The output stream with the frontmatter content prepended.
     """
     
-    # create an output stream
+    # read the first line of the input stream
+    reader = csv.reader(input_stream)
+    headers = next(reader)
+
+    # reset the input stream
+    input_stream.seek(0)
+
+    # Extract max_decision_count from input_stream data
+    max_decision_count = get_max_decision_count(headers)
+
+    # Assemble frontmatter string
+    config_instance = config.Config()
+    connector_style = config_instance.connector_style
+    frontmatter_content = config_instance.static_frontmatter + \
+                        get_connect_frontmatter(max_decision_count, connector_style) + \
+                        get_ignore_frontmatter(max_decision_count)
+    # Create an output stream
     output_stream = io.StringIO()
-    
-    # Read and store the frontmatter
-    with open(frontmatter_file, 'r') as frontmatter_file:
-        frontmatter_content = frontmatter_file.read()
-    
-    # write the frontmatter to the output stream
+
+    # Write the frontmatter to the output stream
     output_stream.write(frontmatter_content)
-    
-    # Then write the input stream
+
+    # Write the input stream
     output_stream.write(input_stream.read())
-    
+
     output_stream.seek(0)
     return output_stream
 
@@ -528,7 +547,7 @@ def xl_to_drawio(input_stream):
 
     script_dir = os.path.dirname(os.path.realpath(__file__)) # Get the directory of this script
     frontmatter_path = os.path.join(script_dir, 'frontmatter.txt') # Construct the path to the frontmatter file
-    input_stream = add_frontmatter(input_stream, frontmatter_path)
+    input_stream = add_frontmatter(input_stream)
     with open('tests/debug_output/10_add_frontmatter.csv', 'w') as f:
         f.write(input_stream.getvalue())
     input_stream.seek(0)

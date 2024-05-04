@@ -3,8 +3,9 @@ import io
 import subprocess
 import os
 import csv
-from tests.testing_support_functions import normalize_csv
-
+from tests.testing_support import normalize_csv
+from tests.testing_support import TEST_DRAWIO_FILE_DATA
+from tests.testing_support import TEST_DRAWIO_CSV_FILE_DATA
 
 from drawio_xl.drawio_to_xl import convert_to_csv  
 from drawio_xl.drawio_to_xl import strip_front_matter  
@@ -23,21 +24,13 @@ class TestConvertToCSV(unittest.TestCase):
         # Remove the limit on the length of the diff message
         self.maxDiff = None
 
-        # Specify the paths to the input, frontmatter, and expected output files
-        input_file = 'tests/test_drawio.drawio'
-        frontmatter_file = 'tests/test_frontmatter.txt'
-        expected_output_file = 'tests/test_drawio.csv'
-
-        # Open the input file and call the function
-        with open(input_file, 'r') as input_stream:
-            actual_output_stream = convert_to_csv(input_stream, frontmatter_file)
-
+        # create the input stream and output stream from the test data
+        input_stream = io.StringIO(TEST_DRAWIO_FILE_DATA)
+        actual_output_stream = convert_to_csv(input_stream)
         actual_output = actual_output_stream.read()
-
-        # Open the expected output file and read its contents
-        with open(expected_output_file, 'r') as f:
-            expected_output = f.read()
-
+        
+        expected_output = TEST_DRAWIO_CSV_FILE_DATA
+        
         # Check that the actual output matches the expected output
         self.assertEqual(normalize_csv(actual_output), normalize_csv(expected_output))
         

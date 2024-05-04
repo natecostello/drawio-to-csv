@@ -4,7 +4,11 @@ import csv
 import os
 from xml.etree import ElementTree as ET
 import subprocess
-from tests.testing_support_functions import normalize_xml
+from tests.testing_support import normalize_xml
+
+from drawio_xl.utils import get_max_decision_count, get_connect_frontmatter, get_ignore_frontmatter
+from drawio_xl.config import Config
+
 
 from drawio_xl.xl_to_drawio import rename_headers
 from drawio_xl.xl_to_drawio import lower_shape_case
@@ -17,6 +21,7 @@ from drawio_xl.xl_to_drawio import parse_decisions
 from drawio_xl.xl_to_drawio import add_frontmatter
 from drawio_xl.xl_to_drawio import csv_to_drawio
 from drawio_xl.xl_to_drawio import xl_to_drawio
+from drawio_xl.xl_to_drawio import add_frontmatter
 
 
 class TestRenameHeaders(unittest.TestCase):
@@ -135,23 +140,33 @@ class TestParseDecisions(unittest.TestCase):
         self.assertEqual(output_data, expected_output_data)
 
 class TestAddFrontmatter(unittest.TestCase):
-    def setUp(self):
-        # Create a dummy frontmatter file
-        with open('tests/frontmatter.txt', 'w') as f:
-            f.write('This is the frontmatter\n')
-        # Create a dummy input stream
-        self.input_stream = io.StringIO('This is the main content\n')
-
     def test_add_frontmatter(self):
-        # Call the function
-        output_stream = add_frontmatter(self.input_stream, 'tests/frontmatter.txt')
+        # Create a sample input stream
+        input_data = "header1,header2,header3,decision0_id,decision0_label,decision1_id,decision1_label\nrow1,row2,row3,0_id,0_label,1_id,1_label\n"
+        input_stream = io.StringIO(input_data)
 
-        # Check the output
-        self.assertEqual(output_stream.read(), 'This is the frontmatter\nThis is the main content\n')
+        # Create a Config instance
+        config_instance = Config()
 
-    def tearDown(self):
-        # Clean up the dummy frontmatter file
-        os.remove('tests/frontmatter.txt')
+        # Calculate the expected max_decision_count and frontmatter_content
+        reader = csv.reader(io.StringIO(input_data))
+        headers = next(reader)
+        expected_max_decision_count = get_max_decision_count(headers)
+        expected_frontmatter_content = config_instance.static_frontmatter + \
+                                       get_connect_frontmatter(expected_max_decision_count, config_instance.connector_style) + \
+                                       get_ignore_frontmatter(expected_max_decision_count)
+
+        # Call the add_frontmatter function
+        output_stream = add_frontmatter(input_stream)
+
+        # Read the output stream
+        output_data = output_stream.read()
+        
+        # Check that the output data starts with the expected frontmatter content
+        self.assertTrue(output_data.startswith(expected_frontmatter_content))
+
+        # Check that the output data ends with the input stream data
+        self.assertTrue(output_data.endswith(input_data))
 
 class TestCsvToDrawio(unittest.TestCase):
     def test_csv_to_drawio(self):
@@ -183,7 +198,7 @@ class TestXlToDrawio(unittest.TestCase):
         # Read the expected output Draw.io file
         with open('tests/test_drawio.drawio', 'r') as file:
             expected_output = file.read()
-        
+
         # Compare the output to the expected output
         self.assertEqual(normalize_xml(output_stream.getvalue()), normalize_xml(expected_output))
 

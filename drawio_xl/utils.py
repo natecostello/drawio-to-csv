@@ -1,5 +1,6 @@
 import csv
 import io
+import re
 
 def delete_column(input_stream, column_name):
     """
@@ -164,3 +165,68 @@ def get_front_matter():
     
     return front_matter
 
+def get_max_decision_count(headers):
+    """
+    This function takes a list of csv headers and determines the value of max_decision_count 
+    based on the presence of fields of the form "decisionN_id" and "decisionN_label".
+
+    Parameters:
+    headers (list): The list of headers.
+
+    Returns:
+    max_decision_count (int): The maximum decision count found in the headers.
+    """
+    # Initialize max_decision_count to 0
+    max_decision_count = 0
+
+    # Check each header
+    for header in headers:
+        # If the header matches the pattern "decisionN_id" or "decisionN_label"
+        match = re.match(r'decision(\d+)_(id|label)', header)
+        if match:
+            # Extract N from the header and convert it to an integer
+            N = int(match.group(1))
+            # If N+1 is greater than the current max_decision_count, update max_decision_count
+            if N+1 > max_decision_count:
+                max_decision_count = N+1
+
+    return max_decision_count
+
+def get_connect_frontmatter(max_decision_count, connector_style):
+    """
+    This function generates a string of connection instructions based on the provided max_decision_count and connector_style.  Each line of the string is terminated with a newline character.
+
+    Parameters:
+    max_decision_count (int): The maximum decision count.
+    connector_style (str): The style of the connector.
+
+    Returns:
+    connect_string (str): The generated string of connection instructions.
+    """
+    # Initialize the connect string with the connection for "next_step_id"
+    connect_string = f'# connect: {{"from": "next_step_id", "to": "id", "style": "{connector_style}"}}\n'
+
+    # Add the connections for "decisionN_id" and "decisionN_label" for each N from 0 to max_decision_count - 1
+    for N in range(max_decision_count):
+        connect_string += f'# connect: {{"from": "decision{N}_id", "to": "id", "fromlabel": "decision{N}_label", "style": "{connector_style}"}}\n'
+
+    return connect_string
+
+def get_ignore_frontmatter(max_decision_count):
+    """
+    This function generates a string of frontmatter instructions based on the provided max_decision_count.  The string terminates with a newline character.
+
+    Parameters:
+    max_decision_count (int): The maximum decision count.
+
+    Returns:
+    ignore_string (str): The generated string of frontmatter instructions.
+    """
+    # Initialize the ignore string with the fixed fields
+    ignore_string = '# ignore: id, next_step_id, shape, width, height'
+
+    # Add the fields for "decisionN_id" and "decisionN_label" for each N from 0 to max_decision_count - 1
+    for N in range(max_decision_count):
+        ignore_string += f', decision{N}_id, decision{N}_label'
+
+    return ignore_string + '\n'    

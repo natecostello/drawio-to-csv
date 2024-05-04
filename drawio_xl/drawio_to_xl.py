@@ -19,29 +19,30 @@ import os
 
 if __name__ == '__main__':
     from utils import delete_column
+    from utils import get_max_decision_count
 else:
     from drawio_xl.utils import delete_column
+    from drawio_xl.utils import get_max_decision_count
 
 
-def convert_to_csv(input_stream, frontmatter_file):
+def convert_to_csv(input_stream):
     """
     Convert a .drawio (XML) file to a draw.io formatted CSV string.
 
     This function parses a draw.io (XML) file from the provided input stream, 
     extracts relevant data based on predefined shape dimensions, and returns 
-    the data as a draw.io formatted CSV string.
+    the data as a draw.io formatted CSV string without frontmatter.
 
     Parameters:
     input_stream (io.TextIOWrapper): The input stream from which to read the draw.io XML file.
-    frontmatter_file (str): The path to the frontmatter file.
-
+    
     The function uses the xml.etree.ElementTree module to parse the XML file. 
     It defines shape dimensions based on shapes for accurate dimension assignment. 
     The shape dimensions are currently hardcoded in the function, but there's a TODO 
     to move this to a config object that reads a config file.
 
     Returns:
-    io.StringIO: The draw.io formatted CSV stream.
+    io.StringIO: The draw.io formatted CSV stream without frontmatter.
     """
     # Load and parse the XML
     tree = ET.parse(input_stream)
@@ -76,9 +77,9 @@ def convert_to_csv(input_stream, frontmatter_file):
     fieldnames.add('height')
     fieldnames.add('next_step_id')
     fieldnames.add('xl_id')
-    for i in range(max_decision_count):
-        fieldnames.add(f'decision{i}_id')
-        fieldnames.add(f'decision{i}_label')
+    # for i in range(max_decision_count):
+    #     fieldnames.add(f'decision{i}_id')
+    #     fieldnames.add(f'decision{i}_label')
 
     # Function to parse the shape from the style string
     def refined_parse_shape(style):
@@ -129,7 +130,7 @@ def convert_to_csv(input_stream, frontmatter_file):
             })
 
     # Determine max_decision_count based on connections to decision nodes
-    max_decision_count = 3
+    max_decision_count = 0
     for node in nodes:
         connected_edges = [edge for edge in edges if edge['source'] == node['id']]
         decision_count = 0
@@ -161,14 +162,7 @@ def convert_to_csv(input_stream, frontmatter_file):
                 else:
                     node['next_step_id'] = edge['target']
 
-    # Read the front matter from the provided file
-    with open(frontmatter_file, 'r') as f:
-        front_matter = f.read()
-
-    # Write the final CSV with hardcoded front matter
     output = io.StringIO()
-    #TODO migrate frontmatter to utils
-    output.write(front_matter)
     # Sort the fieldnames for consistency in the output for testing
     fieldnames = sorted(list(fieldnames))
     writer = csv.DictWriter(output, fieldnames=fieldnames, lineterminator='\n')
@@ -351,15 +345,14 @@ def parse_decisions(input_stream):
     Returns:
     io.StringIO: A new stream with the parsed decision fields.
     """
-    #TODO generalize to number provided in config
-    max_decision_count = 3
-
+    
     # first pass
     reader = csv.reader(input_stream)
     output = io.StringIO()
     writer = csv.writer(output)
 
     headers = next(reader)
+    max_decision_count = get_max_decision_count(headers)
     shape_index = headers.index('shape')
     next_step_id_index = headers.index('next_step_id')
 
@@ -533,7 +526,7 @@ def drawio_to_xl(input_stream):
     
     script_dir = os.path.dirname(os.path.realpath(__file__)) # Get the directory of this script
     frontmatter_path = os.path.join(script_dir, 'frontmatter.txt') # Construct the path to the frontmatter file
-    output_stream = convert_to_csv(input_stream, frontmatter_path) # Call the convert_to_csv function
+    output_stream = convert_to_csv(input_stream) # Call the convert_to_csv function
     # output_stream = convert_to_csv(input_stream, 'frontmatter.txt')
     with open('tests/debug_output/0_convert_to_csv.csv', 'w') as f:
         f.write(output_stream.getvalue())
