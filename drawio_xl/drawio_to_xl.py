@@ -62,9 +62,7 @@ def convert_to_csv(input_stream, frontmatter_file):
         # Add other shapes as necessary
     }
 
-    # TODO generalize to number provided in config
-    max_decision_count = 3
-
+    
     # Required fields that will be built from any diagram are
     # id, shape, width, height, next_step_id, decisionN_id, decisionN_label, xl_id
 
@@ -129,6 +127,22 @@ def convert_to_csv(input_stream, frontmatter_file):
                 'target': element.get('target'),
                 'label': element.get('value', '').strip()
             })
+
+    # Determine max_decision_count based on connections to decision nodes
+    max_decision_count = 3
+    for node in nodes:
+        connected_edges = [edge for edge in edges if edge['source'] == node['id']]
+        decision_count = 0
+        for edge in connected_edges:
+            if node['shape'] == 'decision':
+                decision_count += 1
+        # Update max_decision_count if necessary
+        max_decision_count = max(max_decision_count, decision_count)
+
+    # Add decision fields to fieldnames
+    for i in range(max_decision_count):
+        fieldnames.add(f'decision{i}_id')
+        fieldnames.add(f'decision{i}_label')
 
     # Assign relationships
     for node in nodes:
