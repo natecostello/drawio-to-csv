@@ -77,9 +77,11 @@ def rename_headers(input_stream):
     headers = next(reader)
 
     # for all headers not in fixed_headers, replace spaces with underscores and lowercase the header
+    # TODO lower case and underscore all
     headers = [header.replace(' ', '_').lower() if header not in fixed_headers else header for header in headers]
 
     # rename fixed headers
+    # TODO add to config file but keys are lower case and underscored
     headers[headers.index('Process Step ID')] = 'id'
     headers[headers.index('Shape Type')] = 'shape'
     headers[headers.index('Connector Label')] = 'connector_label'

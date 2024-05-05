@@ -417,6 +417,7 @@ def rename_headers(input_stream):
     headers = [header.replace('_', ' ').title() if header not in fixed_headers else header for header in headers]
     
     # rename fixed headers
+    # TODO add to config file
     headers[headers.index('id')] = 'Process Step ID'
     headers[headers.index('shape')] = 'Shape Type'
     headers[headers.index('connector_label')] = 'Connector Label'
