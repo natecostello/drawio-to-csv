@@ -335,15 +335,7 @@ def parse_decisions(input_stream):
     reader = csv.reader(input_stream)
     output_stream = io.StringIO()
     writer = csv.writer(output_stream, lineterminator='\n')
-    #writer = csv.writer(output_stream)
-
-    # TODO generalize to number provided in config
-    # TODO write a utils function that can determine this value based on decision shapes
-    # The function should tolerate missing decision labels
-    max_decision_count = 3
     
-
-
     headers = next(reader)
     shape_index = headers.index('shape')
     next_step_id_index = headers.index('next_step_id')

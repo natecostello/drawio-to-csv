@@ -32,16 +32,13 @@ def convert_to_csv(input_stream):
     Convert a .drawio (XML) file to a draw.io formatted CSV string.
 
     This function parses a draw.io (XML) file from the provided input stream, 
-    extracts relevant data based on predefined shape dimensions, and returns 
-    the data as a draw.io formatted CSV string without frontmatter.
+    extracts shapes, shape properties, and relationships.  It returns a draw.io 
+    formatted CSV string without frontmatter.
 
     Parameters:
     input_stream (io.TextIOWrapper): The input stream from which to read the draw.io XML file.
     
     The function uses the xml.etree.ElementTree module to parse the XML file. 
-    It defines shape dimensions based on shapes for accurate dimension assignment. 
-    The shape dimensions are currently hardcoded in the function, but there's a TODO 
-    to move this to a config object that reads a config file.
 
     Returns:
     io.StringIO: The draw.io formatted CSV stream without frontmatter.
