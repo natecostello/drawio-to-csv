@@ -14,7 +14,7 @@ if __name__ == '__main__':
     from utils import get_max_decision_count
     from utils import get_connect_frontmatter
     from utils import get_ignore_frontmatter
-    import config
+    from config import Config
 
 else:
     from drawio_xl.utils import delete_column
@@ -24,7 +24,7 @@ else:
     from drawio_xl.utils import get_max_decision_count
     from drawio_xl.utils import get_connect_frontmatter
     from drawio_xl.utils import get_ignore_frontmatter
-    from drawio_xl import config
+    from drawio_xl.config import Config
 
 
 
@@ -296,17 +296,8 @@ def insert_height_width(input_stream):
     headers.extend(['width', 'height'])
     writer.writerow(headers)
 
-    #TODO these should come from a config file
-    shape_dimensions = {
-        'decision': ('100', '100'),
-        'process': ('200', '100'),
-        'or': ('100', '100'),
-        'start_1': ('100', '100'),
-        'terminator': ('100', '50'),
-        'predefined_process': ('200', '100'),
-        'data': ('200', '100'),
-        'document': ('200', '100'),
-    }
+    config = Config()
+    shape_dimensions = config.shape_dimensions
 
     for row in reader:
         shape = row[shape_index]
@@ -345,6 +336,8 @@ def parse_decisions(input_stream):
     #writer = csv.writer(output_stream)
 
     # TODO generalize to number provided in config
+    # TODO write a utils function that can determine this value based on decision shapes
+    # The function should tolerate missing decision labels
     max_decision_count = 3
 
 
@@ -401,9 +394,9 @@ def add_frontmatter(input_stream):
     max_decision_count = get_max_decision_count(headers)
 
     # Assemble frontmatter string
-    config_instance = config.Config()
-    connector_style = config_instance.connector_style
-    frontmatter_content = config_instance.static_frontmatter + \
+    config = Config()
+    connector_style = config.connector_style
+    frontmatter_content = config.static_frontmatter + \
                         get_connect_frontmatter(max_decision_count, connector_style) + \
                         get_ignore_frontmatter(max_decision_count)
     # Create an output stream

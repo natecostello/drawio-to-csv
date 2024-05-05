@@ -20,9 +20,11 @@ import os
 if __name__ == '__main__':
     from utils import delete_column
     from utils import get_max_decision_count
+    from config import Config
 else:
     from drawio_xl.utils import delete_column
     from drawio_xl.utils import get_max_decision_count
+    from drawio_xl.config import Config
 
 
 def convert_to_csv(input_stream):
@@ -47,23 +49,10 @@ def convert_to_csv(input_stream):
     # Load and parse the XML
     tree = ET.parse(input_stream)
     root = tree.getroot()
-
-    # Define shape dimensions based on shapes for accurate dimension assignment
-    # TODO move this to a config object that reads a config file
-    shape_dimensions = {
-        'process': ('200', '100'),
-        'decision': ('100', '100'),
-        'data': ('200', '100'),  # Example shapes, adjust as necessary
-        'predefined_process': ('200', '100'),
-        'terminator': ('100', '50'),
-        'document': ('200', '100'),
-        'or': ('100', '100'),
-        'summing_function': ('100', '100'),
-        'start': ('100', '100'),   
-        # Add other shapes as necessary
-    }
-
     
+    #create config instance
+    config = Config()
+    shape_dimensions = config.shape_dimensions
     # Required fields that will be built from any diagram are
     # id, shape, width, height, next_step_id, decisionN_id, decisionN_label, xl_id
 

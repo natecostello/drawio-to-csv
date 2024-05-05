@@ -1,6 +1,4 @@
-# config.py
-
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 
 # Define your large string here
 STATIC_FRONTMATTER = """## ******Static Frontmatter*******
@@ -23,8 +21,31 @@ STATIC_FRONTMATTER = """## ******Static Frontmatter*******
 # edgespacing: 40
 # layout: horizontalflow
 """
+def default_shape_dimensions():
+    return {
+        'process': ('200', '100'),
+        'decision': ('100', '100'),
+        'data': ('200', '100'),  
+        'predefined_process': ('200', '100'),
+        'terminator': ('100', '50'),
+        'document': ('200', '100'),
+        'or': ('100', '100'),
+        'summing_function': ('100', '100'),
+        'start': ('100', '100'),
+    }
 
 @dataclass
 class Config:
     static_frontmatter: str = STATIC_FRONTMATTER
     connector_style: str = "endArrow=blockThin;endFill=1;fontSize=11;edgeStyle=orthogonalEdgeStyle;"
+    shape_dimensions: dict = field(default_factory=lambda: {
+        'process': ('200', '100'),
+        'decision': ('100', '100'),
+        'data': ('200', '100'),  
+        'predefined_process': ('200', '100'),
+        'terminator': ('100', '50'),
+        'document': ('200', '100'),
+        'or': ('100', '100'),
+        'summing_function': ('100', '100'),
+        'start': ('100', '100'),
+    })
