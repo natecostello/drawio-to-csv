@@ -261,6 +261,7 @@ def get_ignore_frontmatter(max_decision_count):
     ignore_string (str): The generated string of frontmatter instructions.
     """
     # Initialize the ignore string with the fixed fields
+    # TODO this should be driven by config maybe
     ignore_string = '# ignore: id, next_step_id, shape, width, height'
 
     # Add the fields for "decisionN_id" and "decisionN_label" for each N from 0 to max_decision_count - 1
