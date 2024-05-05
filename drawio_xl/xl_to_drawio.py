@@ -233,15 +233,9 @@ def save_id(input_stream):
 
 def rename_shapes(input_stream):
     """
-    Renames certain 'shape' values in the input CSV to maintain correspondence with between Visio and draw.io.
+    Renames certain 'shape' values in the input CSV to maintain correspondence with between Visio and draw.io.  If a shape is unknown, it is left unchanged.
 
     The modified CSV is written to a new output stream, which is then returned.
-
-    The mapping of 'shape' values from Visio to draw.io is as follows:
-    - 'custom 1' is renamed to 'summing_junction'.
-    - 'custom 2' is renamed to 'or'.
-    - 'end' is renamed to 'terminator'.
-    - 'start' is renamed to 'start_1'.
 
     Args:
         input_stream (io.StringIO): The input stream containing the CSV data.
@@ -249,26 +243,20 @@ def rename_shapes(input_stream):
     Returns:
         io.StringIO: The output stream with the renamed 'shape' values.
     """
+    reader = csv.DictReader(input_stream)
     output_stream = io.StringIO()
-    reader = csv.reader(input_stream)
-    writer = csv.writer(output_stream, lineterminator='\n')
-
-    headers = next(reader)
-    shape_index = headers.index('shape')
+    writer = csv.DictWriter(output_stream, fieldnames=reader.fieldnames, lineterminator='\n')
     
-    writer.writerow(headers)
+    writer.writeheader()
+
+    config = Config()
+    xl_to_drawio_shape_mapping = config.xl_to_drawio_shape_mapping
 
     for row in reader:
-        if row[shape_index] == "custom 2":
-            row[shape_index] = "or"
-        elif row[shape_index] == "custom 1":
-            row[shape_index] = "summing_function"
-        elif row[shape_index] == "end":
-            row[shape_index] = "terminator"
-        elif row[shape_index] == "start":
-            row[shape_index] = "start_1"
+        if row['shape'] in xl_to_drawio_shape_mapping:
+            row['shape'] = xl_to_drawio_shape_mapping[row['shape']]
         writer.writerow(row)
-    
+
     output_stream.seek(0)
     return output_stream
 

@@ -287,7 +287,7 @@ def delete_xl_ids(input_stream):
 
 def rename_shapes(input_stream):
     """
-    Rename shapes in the CSV content to maintain correspondence between Drawio and Visio shapes.
+    Rename shapes in the CSV content to maintain correspondence between Drawio and Visio shapes.  If the shape is not found in the mapping, the shape is left unchanged.
 
     This function reads the CSV content from the given input stream,
     renames shapes based on predefined mappings, and returns the modified
@@ -305,15 +305,12 @@ def rename_shapes(input_stream):
     
     writer.writeheader()
 
+    config = Config()
+    drawio_to_xl_shape_mapping = config.drawio_to_xl_shape_mapping
+
     for row in reader:
-        if row['shape'] == 'start_1':
-            row['shape'] = 'start'
-        elif row['shape'] == 'terminator':
-            row['shape'] = 'end'
-        elif row['shape'] == 'summing_function': #this is an OR
-            row['shape'] = 'custom 1' #maintains compatibility with visio
-        elif row['shape'] == 'or': #this is an AND
-            row['shape'] = 'custom 2' #maintains compatibility with visio
+        if row['shape'] in drawio_to_xl_shape_mapping:
+            row['shape'] = drawio_to_xl_shape_mapping[row['shape']]
         writer.writerow(row)
 
     output_stream.seek(0)

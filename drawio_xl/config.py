@@ -21,18 +21,6 @@ STATIC_FRONTMATTER = """## ******Static Frontmatter*******
 # edgespacing: 40
 # layout: horizontalflow
 """
-def default_shape_dimensions():
-    return {
-        'process': ('200', '100'),
-        'decision': ('100', '100'),
-        'data': ('200', '100'),  
-        'predefined_process': ('200', '100'),
-        'terminator': ('100', '50'),
-        'document': ('200', '100'),
-        'or': ('100', '100'),
-        'summing_function': ('100', '100'),
-        'start': ('100', '100'),
-    }
 
 @dataclass
 class Config:
@@ -48,4 +36,26 @@ class Config:
         'or': ('100', '100'),
         'summing_function': ('100', '100'),
         'start': ('100', '100'),
+    })
+    xl_to_drawio_shape_mapping: dict = field(default_factory=lambda: {
+        'process': 'process',
+        'decision': 'decision',
+        'data': 'data',
+        'document': 'document',
+        'subprocess': 'predefined_process',
+        'start': 'start_1',
+        'end': 'terminator',
+        'custom 1': 'summing_function',
+        'custom 2': 'or',
+    })
+    drawio_to_xl_shape_mapping: dict = field(default_factory=lambda: {
+        'process': 'process',
+        'decision': 'decision',
+        'data': 'data',
+        'document': 'document',
+        'predefined_process': 'subprocess',
+        'start_1': 'start',
+        'terminator': 'end',
+        'summing_function': 'custom 1',
+        'or': 'custom 2',
     })

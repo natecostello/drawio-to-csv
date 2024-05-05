@@ -2,7 +2,7 @@ Process Step ID,Owner,Description,Status,Function,Phase,Estimated Duration,Estim
 2,nate,This is a long task description like we would expect,todo,,,,,,,,"3,4,5,9",process,
 3,alan,Cell B,done,mechanical,detail design,,,,,,"4, 6",decision,"Yes, No"
 4,,Cell C,doing,,,,,,,,"6, 5",decision,"Pass, Fail"
-5,alan,Cell D - I would like to see what a long description on a predefined process looks like,waiting,,,,,,,,7,predefined_process,
+5,alan,Cell D - I would like to see what a long description on a predefined process looks like,waiting,,,,,,,,7,subprocess,
 6,,Cell E,stop,,,,,,,,7,data,
 7,,,waiting,,,,,,,,8,custom 1,
 8,,Done,,,,,,,,,,end,
