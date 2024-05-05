@@ -165,7 +165,45 @@ def get_front_matter():
     
     return front_matter
 
-def get_max_decision_count(headers):
+def get_max_decision_count_from_rows(rows, headers):
+    """
+    This function calculates the maximum decision count from the given rows of CSV data. 
+    The decision count for a row is defined as the number of next steps for rows where the shape is 'decision'.
+    
+    The function first identifies the indices of 'shape', 'next_step_id', and 'connector_label' in the headers list.
+    It then iterates over each row in the rows list. For each row, if the shape is 'decision', 
+    it splits the 'next_step_id' field by comma to get a list of next steps. 
+    If the number of next steps is greater than the current maximum decision count, 
+    it updates the maximum decision count.
+    
+    Finally, it returns the maximum decision count found.
+
+    Args:
+        rows (list): A list of lists where each inner list represents a row of CSV data. 
+                     Each inner list contains string elements.
+        headers (list): A list of strings where each string is a header of the CSV data.
+
+    Returns:
+        int: The maximum decision count found among the rows where the shape is 'decision'. 
+             If no such rows are found, it returns 0.
+    """
+    max_decision_count = 0
+
+    shape_index = headers.index('shape')
+    next_step_id_index = headers.index('next_step_id')
+    connector_label_index = headers.index('connector_label')
+
+    # Iterate over rows and find the maximum number of next steps for rows with shape 'decision'
+    for row in rows:
+        if row[shape_index] == 'decision':
+            next_steps = row[next_step_id_index].split(',')
+            
+            if len(next_steps) > max_decision_count:
+                max_decision_count = len(next_steps)
+
+    return max_decision_count
+    
+def get_max_decision_count_from_headers(headers):
     """
     This function takes a list of csv headers and determines the value of max_decision_count 
     based on the presence of fields of the form "decisionN_id" and "decisionN_label".

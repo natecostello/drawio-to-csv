@@ -5,7 +5,8 @@ from drawio_xl.utils import delete_column
 from drawio_xl.utils import delete_non_utf8
 from drawio_xl.utils import delete_empty_cols
 from drawio_xl.utils import delete_empty_rows
-from drawio_xl.utils import get_max_decision_count
+from drawio_xl.utils import get_max_decision_count_from_headers
+from drawio_xl.utils import get_max_decision_count_from_rows
 from drawio_xl.utils import get_connect_frontmatter
 from drawio_xl.utils import get_ignore_frontmatter
 
@@ -58,16 +59,33 @@ class TestDeleteEmptyRows(unittest.TestCase):
         # Check that the output is as expected
         self.assertEqual(output_stream.getvalue(), "header1,header2,header3\nvalue1,value2,value3\nvalue4,value5,value6\n")
 
-class TestGetMaxDecisionCount(unittest.TestCase):
-    def test_get_max_decision_count(self):
+
+class TestGetMaxDecisionCountFromRows(unittest.TestCase):
+    def test_get_max_decision_count_from_rows(self):
+        headers = ['shape', 'next_step_id', 'connector_label']
+        rows = [
+            ['decision', '1,2,3', 'label1'],
+            ['decision', '4,5', 'label2'],
+            ['action', '6,7,8,9', 'label3'],
+            ['decision', '10,11,12,13,14', 'label4'],
+            ['action', '15', 'label5']
+        ]
+        result = get_max_decision_count_from_rows(rows, headers)
+        self.assertEqual(result, 5)
+
+if __name__ == '__main__':
+    unittest.main()
+
+class TestGetMaxDecisionCountFromHeaders(unittest.TestCase):
+    def test_get_max_decision_count_from_headers(self):
         headers = ['decision1_id', 'decision1_label', 'decision2_id', 'decision2_label', 'decision3_id', 'decision3_label']
-        self.assertEqual(get_max_decision_count(headers), 4)
+        self.assertEqual(get_max_decision_count_from_headers(headers), 4)
 
         headers = ['decision0_id', 'decision0_label']
-        self.assertEqual(get_max_decision_count(headers), 1)
+        self.assertEqual(get_max_decision_count_from_headers(headers), 1)
 
         headers = ['id', 'label']
-        self.assertEqual(get_max_decision_count(headers), 0)
+        self.assertEqual(get_max_decision_count_from_headers(headers), 0)
 
 class TestGetConnectFrontmatter(unittest.TestCase):
     def test_get_connect_frontmatter(self):

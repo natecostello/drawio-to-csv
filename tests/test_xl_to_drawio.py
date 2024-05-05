@@ -6,7 +6,7 @@ from xml.etree import ElementTree as ET
 import subprocess
 from tests.testing_support import normalize_xml
 
-from drawio_xl.utils import get_max_decision_count, get_connect_frontmatter, get_ignore_frontmatter
+from drawio_xl.utils import get_max_decision_count_from_headers, get_connect_frontmatter, get_ignore_frontmatter
 from drawio_xl.config import Config
 
 
@@ -151,7 +151,7 @@ class TestAddFrontmatter(unittest.TestCase):
         # Calculate the expected max_decision_count and frontmatter_content
         reader = csv.reader(io.StringIO(input_data))
         headers = next(reader)
-        expected_max_decision_count = get_max_decision_count(headers)
+        expected_max_decision_count = get_max_decision_count_from_headers(headers)
         expected_frontmatter_content = config_instance.static_frontmatter + \
                                        get_connect_frontmatter(expected_max_decision_count, config_instance.connector_style) + \
                                        get_ignore_frontmatter(expected_max_decision_count)

@@ -19,11 +19,11 @@ import os
 
 if __name__ == '__main__':
     from utils import delete_column
-    from utils import get_max_decision_count
+    from utils import get_max_decision_count_from_headers
     from config import Config
 else:
     from drawio_xl.utils import delete_column
-    from drawio_xl.utils import get_max_decision_count
+    from drawio_xl.utils import get_max_decision_count_from_headers
     from drawio_xl.config import Config
 
 
@@ -341,7 +341,7 @@ def parse_decisions(input_stream):
     writer = csv.writer(output)
 
     headers = next(reader)
-    max_decision_count = get_max_decision_count(headers)
+    max_decision_count = get_max_decision_count_from_headers(headers)
     shape_index = headers.index('shape')
     next_step_id_index = headers.index('next_step_id')
 

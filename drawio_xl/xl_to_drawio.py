@@ -11,7 +11,8 @@ if __name__ == '__main__':
     from utils import delete_non_utf8
     from utils import delete_empty_cols
     from utils import delete_empty_rows
-    from utils import get_max_decision_count
+    from utils import get_max_decision_count_from_headers
+    from utils import get_max_decision_count_from_rows
     from utils import get_connect_frontmatter
     from utils import get_ignore_frontmatter
     from config import Config
@@ -21,7 +22,8 @@ else:
     from drawio_xl.utils import delete_non_utf8
     from drawio_xl.utils import delete_empty_cols
     from drawio_xl.utils import delete_empty_rows
-    from drawio_xl.utils import get_max_decision_count
+    from drawio_xl.utils import get_max_decision_count_from_headers
+    from drawio_xl.utils import get_max_decision_count_from_rows
     from drawio_xl.utils import get_connect_frontmatter
     from drawio_xl.utils import get_ignore_frontmatter
     from drawio_xl.config import Config
@@ -329,7 +331,7 @@ def parse_decisions(input_stream):
     Returns:
         io.StringIO: A stream containing the transformed CSV data.
     """
-        # first pass
+    # first pass
     reader = csv.reader(input_stream)
     output_stream = io.StringIO()
     writer = csv.writer(output_stream, lineterminator='\n')
@@ -339,12 +341,21 @@ def parse_decisions(input_stream):
     # TODO write a utils function that can determine this value based on decision shapes
     # The function should tolerate missing decision labels
     max_decision_count = 3
+    
 
 
     headers = next(reader)
     shape_index = headers.index('shape')
     next_step_id_index = headers.index('next_step_id')
     connector_label_index = headers.index('connector_label')
+    rows = list(reader)
+
+    # Find the max number of decision branches
+    max_decision_count = get_max_decision_count_from_rows(rows, headers)
+
+    # Second Pass
+    input_stream.seek(0)
+    next(reader) # skip the headers
 
     headers.extend([f'decision{i}_{suffix}' for i in range(max_decision_count) for suffix in ['id', 'label']])
     
@@ -391,7 +402,7 @@ def add_frontmatter(input_stream):
     input_stream.seek(0)
 
     # Extract max_decision_count from input_stream data
-    max_decision_count = get_max_decision_count(headers)
+    max_decision_count = get_max_decision_count_from_headers(headers)
 
     # Assemble frontmatter string
     config = Config()
