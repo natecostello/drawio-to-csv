@@ -1,15 +1,3 @@
-# Run the Python scripts in a pipeline, passing the output of each command directly to the next
-# drawio_to_csv.py -i "$input_file" frontmatter.txt | \
-# csv_strip_frontmatter.py | \
-# csv_delete_height_width.py | \
-# csv_rename_ids.py | \
-# csv_strip_xl_ids.py | \
-# csv_rename_shapes.py | \
-# csv_parse_decisions.py | \
-# csv_insert_newlines.py | \
-# csv_rename_headers.py | \
-# csv_reorder_headers.py > "$output_file"
-
 import argparse
 import csv
 import xml.etree.ElementTree as ET
@@ -492,26 +480,8 @@ def drawio_to_xl(input_stream):
     Returns:
     io.StringIO: The output stream containing the processed Excel data.
     """
-    # script_dir = os.path.dirname(os.path.realpath(__file__)) # Get the directory of this script
-    # frontmatter_path = os.path.join(script_dir, 'frontmatter.txt') # Construct the path to the frontmatter file
-    # output_stream = convert_to_csv(input_stream, frontmatter_path) # Call the convert_to_csv function
-    # #output_stream = convert_to_csv(input_stream, 'frontmatter.txt')
-    # output_stream = strip_front_matter(output_stream)
-    # output_stream = delete_height_width(output_stream)
-    # output_stream = replace_ids_with_xl_ids(output_stream)
-    # output_stream = delete_xl_ids(output_stream)
-    # output_stream = rename_shapes(output_stream)
-    # output_stream = parse_decisions(output_stream)
-    # output_stream = insert_newlines(output_stream)
-    # output_stream = rename_headers(output_stream)
-    # output_stream = reorder_headers(output_stream)
-    # return output_stream
 
-    
-    script_dir = os.path.dirname(os.path.realpath(__file__)) # Get the directory of this script
-    frontmatter_path = os.path.join(script_dir, 'frontmatter.txt') # Construct the path to the frontmatter file
     output_stream = convert_to_csv(input_stream) # Call the convert_to_csv function
-    # output_stream = convert_to_csv(input_stream, 'frontmatter.txt')
     with open('tests/debug_output/0_convert_to_csv.csv', 'w') as f:
         f.write(output_stream.getvalue())
     output_stream.seek(0)

@@ -464,24 +464,6 @@ def xl_to_drawio(input_stream):
     Returns:
     io.StringIO: The output stream containing the processed draw.io data.
     """
-    # Delete non-utf8 characters
-    #input_stream = delete_non_utf8(input_stream)
-    
-    # input_stream = delete_empty_cols(input_stream)
-    # input_stream = delete_empty_rows(input_stream)
-    # input_stream = rename_headers(input_stream)
-    # input_stream = lower_shape_case(input_stream)
-    # input_stream = lower_status_case(input_stream)
-    # input_stream = replace_newlines(input_stream)
-    # input_stream = save_id(input_stream)
-    # input_stream = rename_shapes(input_stream)
-    # input_stream = insert_height_width(input_stream)
-    # input_stream = parse_decisions(input_stream)
-    # script_dir = os.path.dirname(os.path.realpath(__file__)) # Get the directory of this script
-    # frontmatter_path = os.path.join(script_dir, 'frontmatter.txt') # Construct the path to the frontmatter file
-    # input_stream = add_frontmatter(input_stream, frontmatter_path)
-    # output_stream = csv_to_drawio(input_stream)
-    
     input_stream = delete_empty_cols(input_stream)
     with open('tests/debug_output/0_delete_empty_cols.csv', 'w') as f:
         f.write(input_stream.getvalue())
@@ -532,8 +514,6 @@ def xl_to_drawio(input_stream):
         f.write(input_stream.getvalue())
     input_stream.seek(0)
 
-    script_dir = os.path.dirname(os.path.realpath(__file__)) # Get the directory of this script
-    frontmatter_path = os.path.join(script_dir, 'frontmatter.txt') # Construct the path to the frontmatter file
     input_stream = add_frontmatter(input_stream)
     with open('tests/debug_output/10_add_frontmatter.csv', 'w') as f:
         f.write(input_stream.getvalue())
