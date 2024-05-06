@@ -64,10 +64,10 @@ class TestGetMaxDecisionCountFromRows(unittest.TestCase):
     def test_get_max_decision_count_from_rows(self):
         headers = ['shape', 'next_step_id', 'connector_label']
         rows = [
-            ['decision', '1,2,3', 'label1'],
-            ['decision', '4,5', 'label2'],
+            ['mxgraph.flowchart.decision', '1,2,3', 'label1'],
+            ['mxgraph.flowchart.decision', '4,5', 'label2'],
             ['action', '6,7,8,9', 'label3'],
-            ['decision', '10,11,12,13,14', 'label4'],
+            ['mxgraph.flowchart.decision', '10,11,12,13,14', 'label4'],
             ['action', '15', 'label5']
         ]
         result = get_max_decision_count_from_rows(rows, headers)

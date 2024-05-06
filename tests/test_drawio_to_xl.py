@@ -6,6 +6,7 @@ import csv
 from tests.testing_support import normalize_csv
 from tests.testing_support import TEST_DRAWIO_FILE_DATA
 from tests.testing_support import TEST_DRAWIO_CSV_FILE_DATA
+from tests.testing_support import TEST_XL_FILE_DATA
 
 from drawio_xl.drawio_to_xl import convert_to_csv  
 from drawio_xl.drawio_to_xl import strip_front_matter  
@@ -79,18 +80,18 @@ class TestDeleteXlIds(unittest.TestCase):
 class TestRenameShapes(unittest.TestCase):
     def test_rename_shapes(self):
         input_data = """id,shape,next_step_id,decision0_id,decision1_id,decision2_id
-100,start_1,"200,300",300,400,500
-200,terminator,100,300,400,500
-300,summing_function,100,200,400,500
-400,or,100,200,300,500
-500,Ellipse,100,200,300,400
+100,mxgraph.flowchart.start_1,"200,300",300,400,500
+200,mxgraph.flowchart.terminator,100,300,400,500
+300,mxgraph.flowchart.summing_function,100,200,400,500
+400,mxgraph.flowchart.or,100,200,300,500
+500,mxgraph.flowchart.Ellipse,100,200,300,400
 """
         expected_output = """id,shape,next_step_id,decision0_id,decision1_id,decision2_id
 100,start,"200,300",300,400,500
 200,end,100,300,400,500
 300,custom 1,100,200,400,500
 400,custom 2,100,200,300,500
-500,Ellipse,100,200,300,400
+500,mxgraph.flowchart.Ellipse,100,200,300,400
 """
         input_stream = io.StringIO(input_data)
         expected_output_stream = io.StringIO(expected_output)
@@ -103,14 +104,14 @@ class TestParseDecisions(unittest.TestCase):
     def test_parse_decisions(self):
         self.maxDiff = None
         input_data = """shape,next_step_id,decision0_id,decision0_label,decision1_id,decision1_label,decision2_id,decision2_label
-decision,,id0,label0,id1,label1,id2,label2
+mxgraph.flowchart.decision,,id0,label0,id1,label1,id2,label2
 other,step_id,,,,,,
-decision,,id3,label3,id4,label4,id5,label5
+mxgraph.flowchart.decision,,id3,label3,id4,label4,id5,label5
 """
         expected_output = """shape,next_step_id,connector_label
-decision,"id0, id1, id2","label0, label1, label2"
+mxgraph.flowchart.decision,"id0, id1, id2","label0, label1, label2"
 other,step_id,
-decision,"id3, id4, id5","label3, label4, label5"
+mxgraph.flowchart.decision,"id3, id4, id5","label3, label4, label5"
 """
         input_stream = io.StringIO(input_data)
         output_stream = parse_decisions(input_stream)
@@ -167,14 +168,10 @@ desc2,owner2,2,note2,status2
 class TestDrawioToXl(unittest.TestCase):
     def test_drawio_to_xl(self):
         self.maxDiff = None
-        # Read the input file
-        with open('tests/test_drawio.drawio', 'r') as f:
-            input_data = f.read()
-        input_stream = io.StringIO(input_data)
+        
+        input_stream = io.StringIO(TEST_DRAWIO_FILE_DATA)
 
-        # Read the expected output file
-        with open('tests/test_xl.csv', 'r') as f:
-            expected_output = f.read()
+        expected_output = TEST_XL_FILE_DATA
 
         # Call the function and get the actual output
         output_stream = drawio_to_xl(input_stream)
@@ -187,11 +184,15 @@ class TestDrawioToXl(unittest.TestCase):
 class TestCommandLineInterface(unittest.TestCase):
     def setUp(self):
         self.output_file = 'tests/test_output.csv'
+        # write the test input file from TEST_DRAWIO_FILE_DATA
+        with open('tests/test_input.drawio', 'w') as f:
+            f.write(TEST_DRAWIO_FILE_DATA)
+        self.input_file = 'tests/test_input.drawio'
 
     def test_drawio_to_xl(self):
         self.maxDiff = None
         # Call the script with the input and output files
-        result = subprocess.run(['python3', 'drawio_xl/drawio_to_xl.py', 'tests/test_drawio.drawio', self.output_file], capture_output=True)
+        result = subprocess.run(['python3', 'drawio_xl/drawio_to_xl.py', self.input_file, self.output_file], capture_output=True)
 
         # Check if the script exited without errors
         self.assertEqual(result.returncode, 0)
@@ -202,8 +203,8 @@ class TestCommandLineInterface(unittest.TestCase):
         # Read the output file and the expected output file
         with open(self.output_file, 'r') as f:
             output = f.read()
-        with open('tests/test_xl.csv', 'r') as f:
-            expected_output = f.read()
+        
+        expected_output = TEST_XL_FILE_DATA
 
         # Check if the output matches the expected output
         self.assertEqual(output, expected_output)
@@ -212,6 +213,9 @@ class TestCommandLineInterface(unittest.TestCase):
         # Delete the output file
         if os.path.exists(self.output_file):
             os.remove(self.output_file)
+        # Delete the input file
+        if os.path.exists(self.input_file):
+            os.remove(self.input_file)
 
 if __name__ == '__main__':
     unittest.main()

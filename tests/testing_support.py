@@ -189,18 +189,30 @@ TEST_DRAWIO_FILE_DATA = """
 """
 
 TEST_DRAWIO_CSV_FILE_DATA = """id,owner,description,status,function,phase,estimated_duration,estimated_completion_date,notes,wbs,oqe,next_step_id,shape,xl_id,width,height,decision0_id,decision0_label,decision1_id,decision1_label
-2,nate,This is a long task description like we would expect,todo,,,,,,,,"3,4,5,9",process,2,200,100,,,,
-3,alan,Cell B,done,mechanical,detail design,,,,,,,decision,3,100,100,4,Yes,6,No
-4,,Cell C,doing,,,,,,,,,decision,4,100,100,6,Pass,5,Fail
-5,alan,Cell D - I would like to see what a long description on a predefined process looks like,waiting,,,,,,,,7,predefined_process,5,200,100,,,,
-6,,Cell E,stop,,,,,,,,7,data,6,200,100,,,,
-7,,,waiting,,,,,,,,8,summing_function,7,100,100,,,,
-8,,Done,,,,,,,,,,terminator,8,100,50,,,,
-9,,Repo,,,,,,,,,10,document,9,200,100,,,,
-10,,,,,,,,,,,7,or,10,100,100,,,,
-11,,start,,,,,,,,,10,start_1,11,100,100,,,,
+2,nate,This is a long task description like we would expect,todo,,,,,,,,"3,4,5,9",mxgraph.flowchart.process,2,200,100,,,,
+3,alan,Cell B,done,mechanical,detail design,,,,,,,mxgraph.flowchart.decision,3,100,100,4,Yes,6,No
+4,,Cell C,doing,,,,,,,,,mxgraph.flowchart.decision,4,100,100,6,Pass,5,Fail
+5,alan,Cell D - I would like to see what a long description on a predefined process looks like,waiting,,,,,,,,7,mxgraph.flowchart.predefined_process,5,200,100,,,,
+6,,Cell E,stop,,,,,,,,7,mxgraph.flowchart.data,6,200,100,,,,
+7,,,waiting,,,,,,,,8,mxgraph.flowchart.summing_function,7,100,100,,,,
+8,,Done,,,,,,,,,,mxgraph.flowchart.terminator,8,100,50,,,,
+9,,Repo,,,,,,,,,10,mxgraph.flowchart.document,9,200,100,,,,
+10,,,,,,,,,,,7,mxgraph.flowchart.or,10,100,100,,,,
+11,,start,,,,,,,,,10,mxgraph.flowchart.start_1,11,100,100,,,,
 """
 
+TEST_XL_FILE_DATA = """Process Step ID,Owner,Description,Status,Function,Phase,Estimated Duration,Estimated Completion Date,Notes,Wbs,Oqe,Next Step ID,Shape Type,Connector Label
+2,nate,This is a long task description like we would expect,todo,,,,,,,,"3,4,5,9",process,
+3,alan,Cell B,done,mechanical,detail design,,,,,,"4, 6",decision,"Yes, No"
+4,,Cell C,doing,,,,,,,,"6, 5",decision,"Pass, Fail"
+5,alan,Cell D - I would like to see what a long description on a predefined process looks like,waiting,,,,,,,,7,subprocess,
+6,,Cell E,stop,,,,,,,,7,data,
+7,,,waiting,,,,,,,,8,custom 1,
+8,,Done,,,,,,,,,,end,
+9,,Repo,,,,,,,,,10,document,
+10,,,,,,,,,,,7,custom 2,
+11,,start,,,,,,,,,10,start,
+"""
 def normalize_csv(csv_string):
         
     """

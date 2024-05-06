@@ -68,8 +68,8 @@ def convert_to_csv(input_stream):
     #     fieldnames.add(f'decision{i}_label')
 
     # Function to parse the shape from the style string
-    def refined_parse_shape(style):
-        prefix = "mxgraph.flowchart."
+    def parse_shape(style):
+        prefix = "shape="
         start = style.find(prefix)
         if start != -1:
             start += len(prefix)
@@ -86,7 +86,7 @@ def convert_to_csv(input_stream):
             mxcell = element.find('.//mxCell')
             if mxcell is not None and 'style' in mxcell.attrib:
                 style = mxcell.get('style', '')
-                shape = refined_parse_shape(style)
+                shape = parse_shape(style)
 
                 # add some required fields
                 details = {
@@ -121,7 +121,7 @@ def convert_to_csv(input_stream):
         connected_edges = [edge for edge in edges if edge['source'] == node['id']]
         decision_count = 0
         for edge in connected_edges:
-            if node['shape'] == 'decision':
+            if node['shape'] == 'mxgraph.flowchart.decision':
                 decision_count += 1
         # Update max_decision_count if necessary
         max_decision_count = max(max_decision_count, decision_count)
@@ -136,13 +136,13 @@ def convert_to_csv(input_stream):
         connected_edges = [edge for edge in edges if edge['source'] == node['id']]
         decision_count = 0
         for edge in connected_edges:
-            if node['shape'] == 'decision' and decision_count < max_decision_count:
+            if node['shape'] == 'mxgraph.flowchart.decision' and decision_count < max_decision_count:
                 decision_key_id = f'decision{decision_count}_id'
                 decision_key_label = f'decision{decision_count}_label'
                 node[decision_key_id] = edge['target']
                 node[decision_key_label] = edge['label']
                 decision_count += 1
-            elif node['shape'] != 'decision':
+            elif node['shape'] != 'mxgraph.flowchart.decision':
                 if 'next_step_id' in node and node['next_step_id']:
                     node['next_step_id'] += ',' + edge['target']
                 else:
@@ -350,7 +350,7 @@ def parse_decisions(input_stream):
     for row in reader:
         row.append('') # Append the connector_label field to the row
         # Handle decision-specific fields
-        if row[shape_index] == "decision":
+        if row[shape_index] == "mxgraph.flowchart.decision":
             decision_ids = [row[index] for index in decision_id_indices]
             decision_labels = [row[index] for index in decision_label_indices]
             row[next_step_id_index] = ', '.join(filter(None, decision_ids))
@@ -536,13 +536,13 @@ def drawio_to_xl(input_stream):
         f.write(output_stream.getvalue())
     output_stream.seek(0)
 
-    output_stream = rename_shapes(output_stream)
-    with open('tests/debug_output/5_rename_shapes.csv', 'w') as f:
+    output_stream = parse_decisions(output_stream)
+    with open('tests/debug_output/5_parse_decisions.csv', 'w') as f:
         f.write(output_stream.getvalue())
     output_stream.seek(0)
 
-    output_stream = parse_decisions(output_stream)
-    with open('tests/debug_output/6_parse_decisions.csv', 'w') as f:
+    output_stream = rename_shapes(output_stream)
+    with open('tests/debug_output/6_rename_shapes.csv', 'w') as f:
         f.write(output_stream.getvalue())
     output_stream.seek(0)
 

@@ -195,7 +195,7 @@ def get_max_decision_count_from_rows(rows, headers):
 
     # Iterate over rows and find the maximum number of next steps for rows with shape 'decision'
     for row in rows:
-        if row[shape_index] == 'decision':
+        if row[shape_index] == 'mxgraph.flowchart.decision':
             next_steps = row[next_step_id_index].split(',')
             
             if len(next_steps) > max_decision_count:

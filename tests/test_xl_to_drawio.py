@@ -5,6 +5,10 @@ import os
 from xml.etree import ElementTree as ET
 import subprocess
 from tests.testing_support import normalize_xml
+from tests.testing_support import TEST_DRAWIO_FILE_DATA
+from tests.testing_support import TEST_DRAWIO_CSV_FILE_DATA
+from tests.testing_support import TEST_XL_FILE_DATA
+
 
 from drawio_xl.utils import get_max_decision_count_from_headers, get_connect_frontmatter, get_ignore_frontmatter
 from drawio_xl.config import Config
@@ -88,17 +92,17 @@ class TestRenameShapes(unittest.TestCase):
         output_stream = rename_shapes(input_stream)
 
         # Check that the output is as expected
-        self.assertEqual(output_stream.getvalue(), "shape\nstart_1\nsumming_function\nor\nterminator\n")
+        self.assertEqual(output_stream.getvalue(), "shape\nmxgraph.flowchart.start_1\nmxgraph.flowchart.summing_function\nmxgraph.flowchart.or\nmxgraph.flowchart.terminator\n")
         
     def test_rename_shapes_no_renaming(self):
         # Create a StringIO object with some CSV data
-        input_stream = io.StringIO("shape\nrectangle\ncircle")
+        input_stream = io.StringIO("shape\nmxgraph.flowchart.rectangle\nmxgraph.flowchart.circle")
 
         # Call the function
         output_stream = rename_shapes(input_stream)
 
         # Check that the output is as expected
-        self.assertEqual(output_stream.getvalue(), "shape\nrectangle\ncircle\n")
+        self.assertEqual(output_stream.getvalue(), "shape\nmxgraph.flowchart.rectangle\nmxgraph.flowchart.circle\n")
         
     def test_rename_shapes_empty_input(self):
         # Create a StringIO object with some CSV data
@@ -113,20 +117,20 @@ class TestRenameShapes(unittest.TestCase):
 class TestInsertHeightWidth(unittest.TestCase):
     def test_insert_height_width(self):
         # Create a StringIO object with some CSV data
-        input_stream = io.StringIO("shape\nprocess\nor\nstart_1\nterminator")
+        input_stream = io.StringIO("shape\nmxgraph.flowchart.process\nmxgraph.flowchart.or\nmxgraph.flowchart.start_1\nmxgraph.flowchart.terminator")
 
         # Call the function
         output_stream = insert_height_width(input_stream)
 
         # Check that the output is as expected
-        self.assertEqual(output_stream.getvalue(), "shape,width,height\nprocess,200,100\nor,100,100\nstart_1,100,100\nterminator,100,50\n")
+        self.assertEqual(output_stream.getvalue(), "shape,width,height\nmxgraph.flowchart.process,200,100\nmxgraph.flowchart.or,100,100\nmxgraph.flowchart.start_1,100,100\nmxgraph.flowchart.terminator,100,50\n")
 
 class TestParseDecisions(unittest.TestCase):
     def test_parse_decisions(self):
         # Prepare the input
         input_data = 'shape,next_step_id,connector_label\n' \
-                     'decision,"1,2,3","option1,option2,option3"\n' \
-                     'process,4,\n'
+                     'mxgraph.flowchart.decision,"1,2,3","option1,option2,option3"\n' \
+                     'mxgraph.flowchart.process,4,\n'
         input_stream = io.StringIO(input_data)
 
         # Call the function
@@ -135,8 +139,8 @@ class TestParseDecisions(unittest.TestCase):
         # Check the output
         output_data = output_stream.getvalue()
         expected_output_data = 'shape,next_step_id,decision0_id,decision0_label,decision1_id,decision1_label,decision2_id,decision2_label\n' \
-                               'decision,,1,option1,2,option2,3,option3\n' \
-                               'process,4,,,,,,\n'
+                               'mxgraph.flowchart.decision,,1,option1,2,option2,3,option3\n' \
+                               'mxgraph.flowchart.process,4,,,,,,\n'
         self.assertEqual(output_data, expected_output_data)
 
 class TestAddFrontmatter(unittest.TestCase):
@@ -171,16 +175,17 @@ class TestAddFrontmatter(unittest.TestCase):
 class TestCsvToDrawio(unittest.TestCase):
     def test_csv_to_drawio(self):
         self.maxDiff = None
-        # Read the test_drawio.csv file into a string stream
-        with open('tests/test_drawio.csv', 'r') as file:
-            input_stream = io.StringIO(file.read())
+        
+        # Set up the input stream
+        input_stream = io.StringIO(TEST_DRAWIO_CSV_FILE_DATA)
+        # Add the frontmatter to the input stream
+        input_stream = add_frontmatter(input_stream)
 
         # Call the csv_to_drawio function
         output_stream = csv_to_drawio(input_stream)
         
-        # Read the test_drawio.drawio file
-        with open('tests/test_drawio.drawio', 'r') as file:
-            expected_output = file.read()
+        # Setup the expected output
+        expected_output = TEST_DRAWIO_FILE_DATA
 
         # Compare the output to the expected output (only look inside root node)
         self.assertEqual(normalize_xml(output_stream.getvalue()), normalize_xml(expected_output))
@@ -188,16 +193,12 @@ class TestCsvToDrawio(unittest.TestCase):
 class TestXlToDrawio(unittest.TestCase):
     def test_xl_to_drawio(self):
         self.maxDiff = None
-        # Read the input CSV file
-        with open('tests/test_xl.csv', 'r') as file:
-            input_stream = io.StringIO(file.read())
+        
+        input_stream = io.StringIO(TEST_XL_FILE_DATA)
 
-        # Call the xl_to_drawio function
         output_stream = xl_to_drawio(input_stream)
 
-        # Read the expected output Draw.io file
-        with open('tests/test_drawio.drawio', 'r') as file:
-            expected_output = file.read()
+        expected_output = TEST_DRAWIO_FILE_DATA
 
         # Compare the output to the expected output
         self.assertEqual(normalize_xml(output_stream.getvalue()), normalize_xml(expected_output))
@@ -206,11 +207,16 @@ class TestCommandLineInterface(unittest.TestCase):
     def setUp(self):
         self.output_file = 'tests/test_output.drawio'
 
+        # write the test input file from TEST_XL_FILE_DATA
+        with open('tests/test_input.csv', 'w') as f:
+            f.write(TEST_XL_FILE_DATA)
+        self.input_file = 'tests/test_input.csv'
+
     def test_xl_to_drawio(self):
         self.maxDiff = None
 
         # Call the script with the input and output files
-        result = subprocess.run(['python3', 'drawio_xl/xl_to_drawio.py', 'tests/test_xl.csv', self.output_file], capture_output=True)
+        result = subprocess.run(['python3', 'drawio_xl/xl_to_drawio.py', self.input_file, self.output_file], capture_output=True)
         
         # Check if the script exited without errors
         self.assertEqual(result.returncode, 0)
@@ -221,8 +227,7 @@ class TestCommandLineInterface(unittest.TestCase):
         # Read the output file and the expected output file
         with open(self.output_file, 'r') as f:
             output = f.read()
-        with open('tests/test_drawio.drawio', 'r') as f:
-            expected_output = f.read()
+        expected_output = TEST_DRAWIO_FILE_DATA
 
         # Check if the output matches the expected output
         self.assertEqual(normalize_xml(output), normalize_xml(expected_output))
@@ -231,6 +236,9 @@ class TestCommandLineInterface(unittest.TestCase):
         # Delete the output file
         if os.path.exists(self.output_file):
             os.remove(self.output_file)
+        # Delete the input file
+        if os.path.exists(self.input_file):
+            os.remove(self.input_file)
 
 if __name__ == '__main__':
     unittest.main()

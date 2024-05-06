@@ -344,7 +344,7 @@ def parse_decisions(input_stream):
     writer.writerow(headers)
 
     for row in reader:
-        if row[shape_index] == "decision":
+        if row[shape_index] == "mxgraph.flowchart.decision":
             decision_ids = [id.strip() for id in row[next_step_id_index].replace('"', '').split(',')]
             decision_labels = [label.strip() for label in row[connector_label_index].replace('"', '').split(',')]
             decision_fields = list(zip(decision_ids + [None]*max_decision_count, decision_labels + [None]*max_decision_count))[:max_decision_count]
