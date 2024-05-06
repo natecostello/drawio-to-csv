@@ -24,6 +24,7 @@ STATIC_FRONTMATTER = """## ******Static Frontmatter*******
 
 @dataclass
 class Config:
+    drawio_path: str = "/Applications/draw.io.app/Contents/MacOS/draw.io"
     static_frontmatter: str = STATIC_FRONTMATTER
     connector_style: str = "endArrow=blockThin;endFill=1;fontSize=11;edgeStyle=orthogonalEdgeStyle;"
     shape_dimensions: dict = field(default_factory=lambda: {

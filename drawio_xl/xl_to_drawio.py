@@ -430,7 +430,8 @@ def csv_to_drawio(input_stream):
         temp_input.flush()  # Ensure all data is written to the file
         
         #TODO this path should come from a config file
-        drawio_path = "/Applications/draw.io.app/Contents/MacOS/draw.io"
+        config = Config()
+        drawio_path = config.drawio_path
         command = [drawio_path, "-x", temp_input.name, "-f", "xml", "-o", temp_output.name]
         
         # Run the command
